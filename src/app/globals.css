@@ -45,12 +45,12 @@ body {
 
 /* Safe area padding for mobile bottom bar */
 .pb-safe {
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5.5rem);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.5rem);
 }
 
 @media (min-width: 768px) {
   .pb-safe {
-    padding-bottom: 0;
+    padding-bottom: 0.375rem;
   }
 }
 

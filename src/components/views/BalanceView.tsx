@@ -58,7 +58,7 @@ export default function BalanceView() {
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-200">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight">
             {t('balanceTitle')}
@@ -68,19 +68,19 @@ export default function BalanceView() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2 self-stretch sm:self-auto justify-between sm:justify-end">
           {settings?.splitMode === 'proportional' && (
             <button
               type="button"
               onClick={() => setIsIncomeModalOpen(true)}
-              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all shadow-2xs ${
+              className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-xl border transition-all shadow-2xs active:scale-95 ${
                 isCustomIncome
                   ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300'
                   : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50'
               }`}
             >
               <Coins className="w-3.5 h-3.5" />
-              <span>{isCustomIncome ? '⚡ Bonus / Variable Activo' : 'Ajustar Sueldos / Bonus'}</span>
+              <span>{isCustomIncome ? '⚡ Bonus Activo' : 'Ajustar Sueldos'}</span>
             </button>
           )}
           <MonthPicker currentMonth={currentMonth} onChange={setCurrentMonth} />
@@ -95,13 +95,13 @@ export default function BalanceView() {
       )}
 
       {/* Main Statement Box */}
-      <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 transition-all space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-5 border-b border-zinc-100 dark:border-zinc-800/80">
+      <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 transition-all space-y-5 sm:space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 pb-4 sm:pb-5 border-b border-zinc-100 dark:border-zinc-800/80">
           <div>
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 block mb-1">
               {t('settlementStatus')}
             </span>
-            <h2 className="text-lg sm:text-xl font-extrabold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-base sm:text-xl font-extrabold text-zinc-900 dark:text-zinc-100">
               {settlement && settlement.amountToPay > 0.01 ? (
                 <span>
                   <strong>{settlement.debtor}</strong> {t('mustTransferTo')} <strong>{settlement.creditor}</strong>
@@ -117,8 +117,8 @@ export default function BalanceView() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="text-left sm:text-right">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-2 sm:pt-0">
+            <div className="text-left sm:text-right bg-zinc-50 dark:bg-zinc-800/40 sm:bg-transparent p-3 sm:p-0 rounded-xl">
               <span className="text-[10px] font-mono font-semibold text-zinc-400 uppercase tracking-wider block">
                 {t('amountToPay')}
               </span>
@@ -132,7 +132,7 @@ export default function BalanceView() {
               <button
                 onClick={handleSettle}
                 disabled={isSettling}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold transition-all shadow-xs disabled:opacity-50"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold transition-all shadow-xs disabled:opacity-50 active:scale-95"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>{isSettling ? '...' : t('markAsSettled')}</span>

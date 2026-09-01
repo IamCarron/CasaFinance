@@ -53,11 +53,11 @@ export default function DashboardView() {
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-200">
       {/* Top Bar: Title & Month */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight flex items-center gap-2">
             <span>{t('householdFinance')}</span>
-            <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+            <span className="text-[10px] sm:text-[11px] font-mono font-medium px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
               {settings?.splitMode === 'equal' ? t('equal') : t('proportional')}
             </span>
           </h1>
@@ -66,38 +66,39 @@ export default function DashboardView() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2 self-stretch sm:self-auto justify-between sm:justify-end">
           <MonthPicker currentMonth={currentMonth} onChange={setCurrentMonth} />
           <button
             onClick={() => {
               setEditingExpense(null);
               setIsExpenseModalOpen(true);
             }}
-            className="flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs active:scale-98"
+            className="flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>{t('addExpense')}</span>
+            <span className="hidden sm:inline">{t('addExpense')}</span>
+            <span className="sm:hidden text-xs">{t('newExpense')}</span>
           </button>
         </div>
       </div>
 
       {/* Hero Section: Interactive Financial Scale ("La Balanza de la Casa") */}
-      <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 transition-all">
-        <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800/80 pb-3 mb-4">
+      <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 transition-all">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-zinc-100 dark:border-zinc-800/80 pb-3 mb-4">
           <div className="flex items-center gap-2">
-            <Scale className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
+            <Scale className="w-4 h-4 text-zinc-700 dark:text-zinc-300 shrink-0" />
             <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
               {t('houseBalanceTitle')}
             </h2>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {/* Button to adjust variable monthly income / bonuses */}
             {settings?.splitMode === 'proportional' && (
               <button
                 type="button"
                 onClick={() => setIsIncomeModalOpen(true)}
-                className={`flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-all ${
+                className={`flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-all active:scale-95 ${
                   isCustomIncome
                     ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300'
                     : 'border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100'
@@ -116,7 +117,7 @@ export default function DashboardView() {
 
             <button
               onClick={() => setActiveTab('balance')}
-              className="text-[11px] font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1 transition-colors"
+              className="text-[11px] font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1 transition-colors active:scale-95"
             >
               <span>{t('viewDetailedSettlement')}</span>
               <ArrowRight className="w-3 h-3" />

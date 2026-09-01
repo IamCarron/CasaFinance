@@ -89,7 +89,7 @@ export default function ExpensesView() {
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-200">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight">
             {t('expensesLedger')}
@@ -99,39 +99,42 @@ export default function ExpensesView() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2 self-stretch sm:self-auto justify-between sm:justify-end">
           <MonthPicker currentMonth={currentMonth} onChange={setCurrentMonth} />
           
-          <button
-            onClick={handleExportCsv}
-            title={t('exportCsv')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700/60 text-xs font-semibold transition-all shadow-2xs"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">{t('exportCsv')}</span>
-          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={handleExportCsv}
+              title={t('exportCsv')}
+              className="flex items-center justify-center p-2 sm:px-3 sm:py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700/60 text-xs font-semibold transition-all shadow-2xs active:scale-95"
+            >
+              <Download className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+              <span className="hidden md:inline ml-1.5">{t('exportCsv')}</span>
+            </button>
 
-          <button
-            onClick={() => {
-              setEditingExpense(null);
-              setIsExpenseModalOpen(true);
-            }}
-            className="flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs active:scale-98"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>{t('newExpense')}</span>
-          </button>
+            <button
+              onClick={() => {
+                setEditingExpense(null);
+                setIsExpenseModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{t('newExpense')}</span>
+              <span className="sm:hidden text-xs">{t('newExpense')}</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5">
-          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">{t('totalFiltered')}</span>
-          <div className="text-lg sm:text-xl font-mono font-black text-zinc-900 dark:text-zinc-100 mt-0.5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+        <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 sm:p-3.5">
+          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block truncate">{t('totalFiltered')}</span>
+          <div className="text-base sm:text-xl font-mono font-black text-zinc-900 dark:text-zinc-100 mt-0.5 truncate">
             {totalFiltered.toLocaleString('es-ES', { minimumFractionDigits: 2 })} {currency}
           </div>
-          <div className="text-[11px] text-zinc-400 mt-0.5">
+          <div className="text-[10px] sm:text-[11px] text-zinc-400 mt-0.5 truncate">
             {totalSettlements > 0 ? (
               <span className="text-indigo-600 dark:text-indigo-400 font-medium">
                 + {totalSettlements.toLocaleString('es-ES', { minimumFractionDigits: 2 })} {currency} {t('settlementTotalNote')}
@@ -142,28 +145,28 @@ export default function ExpensesView() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5">
-          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">{t('commonAccount')}</span>
-          <div className="text-lg sm:text-xl font-mono font-black text-zinc-900 dark:text-zinc-100 mt-0.5">
+        <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 sm:p-3.5">
+          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block truncate">{t('commonAccount')}</span>
+          <div className="text-base sm:text-xl font-mono font-black text-zinc-900 dark:text-zinc-100 mt-0.5 truncate">
             {totalCommon.toLocaleString('es-ES', { minimumFractionDigits: 2 })} {currency}
           </div>
-          <div className="text-[11px] text-zinc-400 mt-0.5">{t('commonCharges')}</div>
+          <div className="text-[10px] sm:text-[11px] text-zinc-400 mt-0.5 truncate">{t('commonCharges')}</div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5">
+        <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 sm:p-3.5">
           <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block truncate">{p1Name}</span>
-          <div className="text-lg sm:text-xl font-mono font-black text-zinc-900 dark:text-zinc-100 mt-0.5">
+          <div className="text-base sm:text-xl font-mono font-black text-zinc-900 dark:text-zinc-100 mt-0.5 truncate">
             {totalP1.toLocaleString('es-ES', { minimumFractionDigits: 2 })} {currency}
           </div>
-          <div className="text-[11px] text-zinc-400 mt-0.5">{t('outOfPocketAdvances')}</div>
+          <div className="text-[10px] sm:text-[11px] text-zinc-400 mt-0.5 truncate">{t('outOfPocketAdvances')}</div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3.5">
+        <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 sm:p-3.5">
           <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block truncate">{p2Name}</span>
-          <div className="text-lg sm:text-xl font-mono font-black text-zinc-900 dark:text-zinc-100 mt-0.5">
+          <div className="text-base sm:text-xl font-mono font-black text-zinc-900 dark:text-zinc-100 mt-0.5 truncate">
             {totalP2.toLocaleString('es-ES', { minimumFractionDigits: 2 })} {currency}
           </div>
-          <div className="text-[11px] text-zinc-400 mt-0.5">{t('outOfPocketAdvances')}</div>
+          <div className="text-[10px] sm:text-[11px] text-zinc-400 mt-0.5 truncate">{t('outOfPocketAdvances')}</div>
         </div>
       </div>
 

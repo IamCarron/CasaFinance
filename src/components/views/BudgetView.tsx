@@ -96,7 +96,7 @@ export default function BudgetView() {
   return (
     <div className="space-y-6 animate-in fade-in-50 duration-200">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight">
             {t('fixedBudgetTitle')}
@@ -111,15 +111,15 @@ export default function BudgetView() {
             setEditingBudgetItem(null);
             setIsBudgetModalOpen(true);
           }}
-          className="flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs active:scale-98 self-start sm:self-auto"
+          className="flex items-center justify-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 px-3.5 py-2 sm:py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs active:scale-95 self-stretch sm:self-auto shrink-0"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
           <span>{t('addBudgetItem')}</span>
         </button>
       </div>
 
       {/* Split Rule & Salary Calculator */}
-      <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 sm:p-6 transition-all space-y-4">
+      <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 transition-all space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
           <div>
             <h2 className="font-bold text-sm sm:text-base text-zinc-900 dark:text-zinc-100">
@@ -133,7 +133,7 @@ export default function BudgetView() {
           <button
             onClick={handleSaveSettings}
             disabled={isSavingSettings}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 w-full sm:w-auto ${
               savedSuccess
                 ? 'bg-emerald-600 text-white'
                 : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700'
