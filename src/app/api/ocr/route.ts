@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       const ocr = await parseReceiptWithLLM(imageBase64, settings);
 
       // 3. Match category by keyword
-      let categoryId = categories[0]?.id || 'cat-comida';
+      let categoryId = categories[0]?.id || '';
       const kw = ocr.categoryKeyword.toLowerCase();
       const titleLower = ocr.title.toLowerCase();
 
@@ -45,17 +45,18 @@ export async function POST(req: NextRequest) {
         const cName = c.name.toLowerCase();
         return (
           cName.includes(kw) ||
-          (kw.includes('comida') && cName.includes('supermercado')) ||
-          (kw.includes('supermercado') && cName.includes('alimentación')) ||
-          (kw.includes('restaurante') && (cName.includes('ocio') || cName.includes('comida'))) ||
-          (kw.includes('suministros') && cName.includes('luz')) ||
-          (kw.includes('gasolina') && cName.includes('transporte')) ||
-          (titleLower.includes('mercadona') && cName.includes('supermercado')) ||
-          (titleLower.includes('carrefour') && cName.includes('supermercado')) ||
-          (titleLower.includes('lidl') && cName.includes('supermercado')) ||
-          (titleLower.includes('dia') && cName.includes('supermercado')) ||
-          (titleLower.includes('repsol') && cName.includes('transporte')) ||
-          (titleLower.includes('farmacia') && cName.includes('hogar'))
+          (kw.includes('comida') && (cName.includes('supermercado') || cName.includes('alimentac'))) ||
+          (kw.includes('supermercado') && cName.includes('alimentac')) ||
+          (kw.includes('restaurante') && (cName.includes('ocio') || cName.includes('restauran') || cName.includes('comida'))) ||
+          (kw.includes('suministro') && (cName.includes('luz') || cName.includes('factura'))) ||
+          (kw.includes('gasolina') && (cName.includes('transporte') || cName.includes('gasolina') || cName.includes('coche'))) ||
+          (kw.includes('farmacia') && (cName.includes('salud') || cName.includes('farmacia') || cName.includes('care'))) ||
+          (titleLower.includes('mercadona') && (cName.includes('supermercado') || cName.includes('alimentac'))) ||
+          (titleLower.includes('carrefour') && (cName.includes('supermercado') || cName.includes('alimentac'))) ||
+          (titleLower.includes('lidl') && (cName.includes('supermercado') || cName.includes('alimentac'))) ||
+          (titleLower.includes('dia') && (cName.includes('supermercado') || cName.includes('alimentac'))) ||
+          (titleLower.includes('repsol') && (cName.includes('transporte') || cName.includes('gasolina'))) ||
+          (titleLower.includes('farmacia') && (cName.includes('salud') || cName.includes('farmacia')))
         );
       });
 

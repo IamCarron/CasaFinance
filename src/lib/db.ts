@@ -379,6 +379,22 @@ export function saveExpense(exp: {
   const now = new Date().toISOString();
   const isSettlement = exp.isSettlement ? 1 : 0;
 
+  // Validate category_id against existing categories to guarantee foreign key integrity
+  let validCategoryId = exp.categoryId;
+  const catCheck = db.prepare('SELECT id FROM categories WHERE id = ?').get(validCategoryId) as { id: string } | undefined;
+  if (!catCheck) {
+    // Fallback to the first available category
+    const firstCat = db.prepare('SELECT id FROM categories ORDER BY is_default DESC, id ASC LIMIT 1').get() as { id: string } | undefined;
+    if (firstCat) {
+      validCategoryId = firstCat.id;
+    } else {
+      // If categories table is completely empty, insert a fallback category first
+      db.prepare('INSERT INTO categories (id, name, icon, color, is_default, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+        .run('cat-general', 'General', 'Receipt', '#64748b', 1, now);
+      validCategoryId = 'cat-general';
+    }
+  }
+
   db.prepare(`
     INSERT INTO expenses (id, title, amount, date, category_id, paid_by, split_between, split_mode_override, notes, receipt_url, is_settlement, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -393,14 +409,14 @@ export function saveExpense(exp: {
       notes = excluded.notes,
       receipt_url = excluded.receipt_url,
       is_settlement = excluded.is_settlement
-  `).run(id, exp.title, exp.amount, exp.date, exp.categoryId, exp.paidBy, exp.splitBetween, exp.splitModeOverride || null, exp.notes || '', exp.receiptUrl || null, isSettlement, now);
+  `).run(id, exp.title, exp.amount, exp.date, validCategoryId, exp.paidBy, exp.splitBetween, exp.splitModeOverride || null, exp.notes || '', exp.receiptUrl || null, isSettlement, now);
 
   return {
     id,
     title: exp.title,
     amount: exp.amount,
     date: exp.date,
-    categoryId: exp.categoryId,
+    categoryId: validCategoryId,
     paidBy: exp.paidBy as any,
     splitBetween: exp.splitBetween as any,
     splitModeOverride: exp.splitModeOverride as any,
