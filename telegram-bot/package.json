@@ -1,0 +1,10 @@
+{
+  "name": "casafinance-telegram-bot",
+  "version": "1.0.0",
+  "description": "Native official Telegram companion bot for CasaFinance",
+  "main": "bot.js",
+  "type": "module",
+  "scripts": {
+    "start": "node bot.js"
+  }
+}

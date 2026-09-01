@@ -1,0 +1,14 @@
+Dockerfile
+docker-compose.yml
+.dockerignore
+node_modules
+npm-debug.log
+README.md
+.next
+.git
+.gitignore
+.DS_Store
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm

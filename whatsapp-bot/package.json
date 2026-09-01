@@ -1,0 +1,15 @@
+{
+  "name": "casafinance-whatsapp-bot",
+  "version": "1.0.0",
+  "description": "WhatsApp companion bot for CasaFinance group",
+  "main": "bot.js",
+  "type": "module",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.18",
+    "qrcode": "^1.5.4",
+    "pino": "^9.5.0"
+  }
+}

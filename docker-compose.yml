@@ -1,0 +1,46 @@
+services:
+  casafinance:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: casafinance
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - BOT_API_TOKEN=${BOT_API_TOKEN}
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+
+  whatsapp-bot:
+    build:
+      context: ./whatsapp-bot
+      dockerfile: Dockerfile
+    container_name: casafinance-whatsapp-bot
+    restart: unless-stopped
+    depends_on:
+      - casafinance
+    volumes:
+      - ./data/whatsapp-auth:/app/auth_info_baileys
+    environment:
+      - CASAFINANCE_API_URL=http://casafinance:3000/api/bot
+      - BOT_API_TOKEN=${BOT_API_TOKEN}
+
+  telegram-bot:
+    build:
+      context: ./telegram-bot
+      dockerfile: Dockerfile
+    container_name: casafinance-telegram-bot
+    restart: unless-stopped
+    depends_on:
+      - casafinance
+    environment:
+      - CASAFINANCE_API_URL=http://casafinance:3000/api/bot
+      - BOT_API_TOKEN=${BOT_API_TOKEN}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_GROUP_NAME=${TELEGRAM_GROUP_NAME:-Gastos Casa}
+
+

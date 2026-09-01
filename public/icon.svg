@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Background Squircle -->
+  <rect width="512" height="512" rx="140" fill="#09090b"/>
+  
+  <!-- Subtle interior border glow -->
+  <rect x="8" y="8" width="496" height="496" rx="132" stroke="#27272a" stroke-width="8"/>
+
+  <!-- Minimalist Architectural Roofline (Casa) -->
+  <path d="M112 248L256 128L400 248" stroke="#ffffff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Finance & Couple Proportion Bars -->
+  <!-- Partner 1 Bar -->
+  <line x1="184" y1="300" x2="184" y2="384" stroke="#10b981" stroke-width="36" stroke-linecap="round"/>
+  <!-- Central Shared Pillar -->
+  <line x1="256" y1="248" x2="256" y2="384" stroke="#ffffff" stroke-width="36" stroke-linecap="round"/>
+  <!-- Partner 2 Bar -->
+  <line x1="328" y1="284" x2="328" y2="384" stroke="#6366f1" stroke-width="36" stroke-linecap="round"/>
+</svg>

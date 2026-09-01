@@ -1,0 +1,48 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+.env
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# SQLite database & storage
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+data/*.backup
+data/*.user_backup
+data/receipts/*
+!data/receipts/.gitkeep
+data/whatsapp-auth/
+data/backups/
+whatsapp-bot/auth_info_baileys/
+!data/.gitkeep

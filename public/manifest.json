@@ -1,0 +1,16 @@
+{
+  "name": "CasaFinance - Finanzas en Pareja",
+  "short_name": "CasaFinance",
+  "description": "Gestión de presupuesto y gastos comunes para parejas",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
