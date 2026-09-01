@@ -177,4 +177,6 @@ Este proyecto está distribuido bajo la **Licencia PolyForm Noncommercial 1.0.0*
 - ✅ **Uso Personal, Familiar y Doméstico**: 100% Libre y gratuito para autoalojamiento y uso privado.
 - 💼 **Uso Comercial, Servicios en la Nube (SaaS) o Distribución de Pago**: Queda estrictamente prohibida la explotación comercial o monetización de este software sin un acuerdo previo. Si deseas utilizar CasaFinance para fines comerciales, contacta con el autor para adquirir una **licencia comercial**.
 
-Copyright (c) 2026 CasaFinance & IamCarron. Todos los derechos reservados para usos comerciales.
+---
+
+Made with ♥ by [IamCarron](https://github.com/IamCarron)
