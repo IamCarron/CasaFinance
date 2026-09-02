@@ -1,182 +1,94 @@
+<div align="center">
+
 # 🏠 CasaFinance
 
-> Gestor financiero y de presupuesto inteligente para parejas. Privado, reactivo, local-first, con soporte para IA/OCR y listo para Docker.
-
-Dividir los gastos al 50/50 cuando los ingresos no son idénticos suele ser injusto o complejo de calcular mes a mes. **CasaFinance** resuelve esto calculando automáticamente la aportación exacta que cada miembro debe hacer a la cuenta común de forma **proporcional a sus ingresos netos**, con la flexibilidad de forzar división al 50/50 en gastos puntuales y soporte para meses con bonus o sueldos variables.
-
----
-
-## 📸 Capturas de Pantalla / Interface Preview
-
-### 🏠 1. Dashboard Principal & Balanza del Hogar
-> Visualiza el reparto proporcional equitativo, el gasto real consumido y las alertas inteligentes de ingresos mensuales.
-
-<p align="center">
-  <img src="docs/screenshots/dashboard.png" alt="CasaFinance Dashboard" width="900" />
-</p>
+**Smart, private, and proportional household finance management for couples.**  
+*Self-hosted • Local-First • WhatsApp & Telegram Bots • AI Vision OCR • Docker Ready*
 
 ---
 
-### 💳 2. Libro de Gastos & Movimientos
-> Registro cronológico de compras con categorización visual y separación estricta de transferencias de liquidación.
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white&style=flat-square)](https://github.com/IamCarron/CasaFinance)
+[![Local-First](https://img.shields.io/badge/Architecture-Local--First-10B981?style=flat-square)](https://github.com/IamCarron/CasaFinance)
+[![License: PolyForm Noncommercial](https://img.shields.io/badge/License-Noncommercial-8B5CF6?style=flat-square)](./LICENSE)
+[![Bilingual](https://img.shields.io/badge/Language-ES%20%7C%20EN-F59E0B?style=flat-square)](./docs/README.md)
 
-<p align="center">
-  <img src="docs/screenshots/expenses.png" alt="Libro de Gastos" width="900" />
-</p>
+<br />
 
----
+<img src="docs/screenshots/dashboard.png" alt="CasaFinance Preview" width="850" style="border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.15);" />
 
-### 📊 3. Presupuesto Fijo & Cálculo Automático de Cuotas
-> Define las partidas fijas del hogar y obtén el importe exacto que cada miembro transfiere a la cuenta común.
+</div>
 
-<p align="center">
-  <img src="docs/screenshots/budget.png" alt="Presupuesto y Cuotas Bancarias" width="900" />
-</p>
+<br />
 
----
-
-### ⚖️ 4. Balance & Compensación Automática de Adelantos
-> Liquidación automática de compras particulares pagadas del propio bolsillo sin alterar el fondo de gastos comunes.
-
-<p align="center">
-  <img src="docs/screenshots/settlements.png" alt="Balance y Liquidación de Deudas" width="900" />
-</p>
+Splitting shared expenses 50/50 when partners have different incomes is often inequitable and tedious to balance. **CasaFinance** automates shared couple finances by calculating fair contributions **proportional to net income**, while providing the flexibility to force 50/50 splits on individual purchases, handle out-of-pocket advances, and track monthly budgets in real-time.
 
 ---
 
-### ⚙️ 5. Ajustes: Modalidad de Sueldos (Fijo / Variable) & IA OCR
-> Configura sueldos estables o variables independientemente para cada miembro, moneda, idioma y Visión OCR.
+## ✨ Key Highlights
 
-<p align="center">
-  <img src="docs/screenshots/settings.png" alt="Ajustes de Pareja e IA" width="900" />
-</p>
-
----
-
-## ✨ Características Principales
-
-- ⚖️ **Reparto Proporcional**: Calcula automáticamente la cuota mensual exacta y justa que cada uno transfiere a la cuenta común según sus ingresos netos.
-- 🔄 **Sueldos Fijos o Variables por Integrante**: Configura si cada miembro tiene nómina fija o ingresos variables (autónomos, comisiones, horas extra). La app te avisará al inicio de cada mes para confirmar los ingresos variables.
-- 🪙 **Ajustes de Mes Puntuales o Fijos**: ¿Paga extra o bonus este mes? Modifícalo puntualmente para este mes sin alterar vuestro sueldo base habitual, o actualiza la nómina de referencia con 1 clic.
-- 💳 **Liquidación Automática de Adelantos**: Si alguien paga compras del hogar de su bolsillo, el sistema calcula la compensación al céntimo. Las liquidaciones no inflan el gasto real de la casa.
-- 📸 **Escáner de Tickets con IA (OCR)**: Saca una foto al ticket y la IA (local con Ollama `llama3.2-vision` o en la nube) extrae comercio, total, fecha y categoría automáticamente.
-- 💬 **Bot de WhatsApp para la Pareja**: Apunta gastos al instante desde vuestro grupo de WhatsApp con lenguaje natural (`"42.50 Mercadona"`, `"18 Farmacia adelanto"` o `"!balance"`).
-- 🎯 **Metas de Ahorro Compartidas**: Crea botes de ahorro (vacaciones, fondo de emergencia, compras...) con barras de progreso, aportaciones y retiradas.
-- 📊 **Balanza del Hogar & Histórico**: Visualización en tiempo real del equilibrio financiero y evolución del gasto real frente al presupuestado.
-- 👁️ **Modo Privacidad**: Oculta los importes y sueldos con un toque para usar la app en lugares públicos.
-- 📥 **Exportación a CSV**: Descarga el libro de gastos filtrado por mes compatible con Excel, Google Sheets y Numbers.
-- 🔀 **Excepciones 50/50 por Gasto**: Fuerza división 50/50 en compras concretas (cenas, caprichos o suscripciones).
-- 🌐 **Totalmente Bilingüe**: Cambia entre **Español 🇪🇸** e **Inglés 🇬🇧** al instante.
-- 🔒 **100% Privado y Local**: Tus datos se guardan en tu propio servidor SQLite (`./data/casafinance.db`).
-- 📱 **Instalable como App Móvil (PWA)**: Añádela a la pantalla de inicio en iOS y Android.
-- 🐳 **Listo para Docker**: Despliegue en 1 minuto en tu servidor doméstico, VPS, NAS o Raspberry Pi.
+- ⚖️ **Equitable Proportional Splitting** — Automatically computes each partner's fair monthly transfer to the joint account based on their net income ratio.
+- 💬 **WhatsApp & Telegram Bots** — Log shared expenses instantly from your couple's chat group in natural language (`42.50 Groceries`, `60 Dinner 50/50`, `18 Pharmacy advance` or `!balance`).
+- 📸 **AI Receipt Scanner (OCR)** — Snap a photo of any receipt to extract the merchant, total, date, and category automatically (runs 100% locally with Ollama or via OpenAI).
+- 💳 **Out-of-Pocket Settlements** — Paid for household items with your personal card? The system tracks advances without inflating household spending and balances debts with one click.
+- 📊 **Dynamic & Variable Incomes** — Seamlessly adjust for bonuses, freelance months, or overtime without modifying your baseline budget.
+- 🎯 **Shared Savings Goals** — Create visual savings pots (vacation, emergency fund, home renovations) with progress bars and allocation logs.
+- 🔒 **100% Local-First & Private** — All data is stored in your own SQLite database (`./data/casafinance.db`). Zero tracking, zero telemetry.
+- 📱 **Mobile PWA Ready** — Installable on iOS Safari and Android Chrome with a responsive native bottom-dock layout.
 
 ---
 
-## 📸 Escáner de Tickets con IA (Ollama Local / OpenAI)
+## ⚡ Quick Start
 
-CasaFinance integra un motor OCR de visión inteligente. Puedes configurarlo en la sección **Ajustes**:
+Deploy on your home server, NAS, Raspberry Pi, or VPS in under a minute:
 
-### Opción A: 100% Local y Privado con Ollama (Recomendado)
-1. Instala Ollama en tu ordenador o servidor: `https://ollama.com`
-2. Descarga el modelo de visión:
-   ```bash
-   ollama run llama3.2-vision
-   ```
-3. En **Ajustes > Escáner de Tickets con IA**, selecciona *Ollama Local* (`http://localhost:11434/api/generate`).
-
-### Opción B: OpenAI Vision
-Si prefieres no ejecutar modelos de visión pesados en local, introduce tu API Key de OpenAI y el modelo `gpt-4o-mini` en Ajustes.
-
----
-
-## 🤖 Bots de Mensajería (Telegram Oficial & WhatsApp)
-
-CasaFinance permite apuntar gastos al instante desde vuestro grupo de chat con lenguaje natural (`"42.50 Mercadona"`, `"60 Cena 50/50"`, `"18 Farmacia adelanto"` o `"!balance"`):
-
-### Opción A: Telegram (100% Oficial, Seguro y Gratuito) — Recomendado
-1. En Telegram, habla con `@BotFather` y escribe `/newbot` para crear tu bot y obtener tu Token.
-2. En **Ajustes > Bot de Mensajería**, selecciona **Telegram**, pega tu Token y el nombre de tu grupo.
-3. Arranca el microservicio de Telegram:
-   ```bash
-   docker compose up -d telegram-bot
-   ```
-
-### Opción B: WhatsApp (Sesión Dedicada)
-> [!WARNING]
-> **Aviso de Seguridad:** No se recomienda utilizar tu cuenta personal de WhatsApp. Para garantizar la privacidad de tus chats personales y evitar problemas de sesión con Meta, se aconseja utilizar una **segunda línea / SIM prepago dedicada** exclusivamente para el bot, o bien optar por **Telegram** (Opción A), que opera mediante una API oficial, segura y aislada.
-
-1. En **Ajustes > Bot de Mensajería**, indica el nombre exacto de vuestro grupo de WhatsApp (ej. `Gastos Casa`) para aislarlo por seguridad.
-2. Arranca el microservicio de WhatsApp:
-   ```bash
-   docker compose up -d whatsapp-bot
-   docker compose logs -f whatsapp-bot
-   ```
-3. Escanea el código QR con el número de WhatsApp secundario deseado.
-
----
-
-## 🚀 Despliegue con Docker
-
-### 1. Clonar el repositorio
 ```bash
+# 1. Clone repository
 git clone https://github.com/iamcarron/CasaFinance.git
 cd CasaFinance
+
+# 2. Launch with Docker Compose
+docker compose up -d
 ```
 
-### 2. Arrancar con Docker Compose
-```bash
-docker compose up -d --build
-```
-
-La aplicación estará lista en `http://localhost:3000` (o `http://<IP-DE-TU-SERVIDOR>:3000`).
+Open your browser at `http://localhost:3000` (or `http://<YOUR-SERVER-IP>:3000`).
 
 ---
 
-## 💻 Desarrollo Local
+## 📚 Documentation & Wiki
 
-**Requisitos**: Node.js 20+ y npm.
+Detailed guides and financial methodology are available in the **[`docs/`](./docs/README.md)** directory:
 
-```bash
-# 1. Instalar dependencias
-npm install
-
-# 2. Iniciar servidor de desarrollo
-npm run dev
-
-# 3. Compilar para producción
-npm run build
-npm start
-```
+| 🇪🇸 Guías en Español | 🇬🇧 English Guides |
+| :--- | :--- |
+| 📖 [01. Filosofía & El Modelo de 3 Cuentas](./docs/es/01-filosofia-y-metodologia.md) | 📖 [01. Philosophy & The 3-Account Model](./docs/en/01-philosophy-and-methodology.md) |
+| 📊 [02. Cómo Definir el Presupuesto](./docs/es/02-como-definir-tu-presupuesto.md) | 📊 [02. How to Define Your Household Budget](./docs/en/02-how-to-define-your-budget.md) |
+| 💬 [03. Guía de Bots (WhatsApp & Telegram)](./docs/es/03-guia-bot-whatsapp-y-telegram.md) | 💬 [03. WhatsApp & Telegram Bot Guide](./docs/en/03-whatsapp-and-telegram-bot-guide.md) |
+| 🐳 [04. Autoalojamiento, Docker & Backups](./docs/es/04-autoalojamiento-y-docker.md) | 🐳 [04. Self-Hosting, Docker & Backups](./docs/en/04-self-hosting-and-docker.md) |
+| ❓ [05. Preguntas Frecuentes (FAQ)](./docs/es/05-preguntas-frecuentes.md) | ❓ [05. Frequently Asked Questions (FAQ)](./docs/en/05-frequently-asked-questions.md) |
 
 ---
 
-## 📱 Añadir a la Pantalla de Inicio (PWA)
+## 🔄 Updates & Maintenance
 
-- **iOS (Safari)**: Pulsa el botón *Compartir* → *"Añadir a la pantalla de inicio"*.
-- **Android (Chrome)**: Pulsa el menú de 3 puntos → *"Instalar aplicación"*.
-
----
-
-## 🔄 Actualización a Nuevas Versiones
-
-Actualizar tu servidor es tan sencillo como ejecutar el script de auto-actualización incluido (crea backup de la base de datos y actualiza los contenedores sin tocar tus datos ni cerrar la sesión de WhatsApp):
+CasaFinance includes a hardened auto-update script that creates SQLite backups and updates your containers without closing your bot session:
 
 ```bash
 ./update.sh
 ```
 
-*(O manualmente con `git pull && docker compose up -d --build`)*.
+---
+
+## 📄 License & Commercial Use
+
+This project is licensed under the **PolyForm Noncommercial License 1.0.0** (See [`LICENSE`](./LICENSE)).
+
+- ✅ **Personal & Domestic Use**: 100% Free and open for self-hosting.
+- 💼 **Commercial & SaaS Use**: Commercial exploitation, monetization, or hosted services require a commercial license. Contact the author for inquiries.
 
 ---
 
-## 📄 Licencia y Uso Comercial
-
-Este proyecto está distribuido bajo la **Licencia PolyForm Noncommercial 1.0.0** (Consulta el archivo [`LICENSE`](./LICENSE) para el texto legal íntegro).
-
-- ✅ **Uso Personal, Familiar y Doméstico**: 100% Libre y gratuito para autoalojamiento y uso privado.
-- 💼 **Uso Comercial, Servicios en la Nube (SaaS) o Distribución de Pago**: Queda estrictamente prohibida la explotación comercial o monetización de este software sin un acuerdo previo. Si deseas utilizar CasaFinance para fines comerciales, contacta con el autor para adquirir una **licencia comercial**.
-
----
+<div align="center">
 
 Made with ♥ by [IamCarron](https://github.com/IamCarron)
+
+</div>
