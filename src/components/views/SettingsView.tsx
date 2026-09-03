@@ -127,7 +127,7 @@ export default function SettingsView() {
   const [backupError, setBackupError] = useState('');
 
   // Version & Updates
-  const CURRENT_VERSION = 'v1.0.3';
+  const CURRENT_VERSION = 'v1.0.4';
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<{
     checked: boolean;
