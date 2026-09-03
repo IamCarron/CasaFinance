@@ -52,7 +52,10 @@ export default function OnboardingWizard() {
     let timer: NodeJS.Timeout;
     const checkStatus = async () => {
       try {
-        const res = await fetch('/api/bot/status');
+        const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') || '' : '';
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch('/api/bot/status', { headers });
         if (res.ok) {
           const data = await res.json();
           setWhatsappStatus(data.status || 'disconnected');
@@ -254,63 +257,132 @@ export default function OnboardingWizard() {
                 </p>
 
                 {splitMode === 'proportional' && (
-                  <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-700/60 space-y-2.5">
-                    <span className="text-[11px] font-bold text-zinc-700 dark:text-zinc-300 block">
-                      {language === 'es' ? 'Indicad vuestros sueldos netos aproximados:' : 'Enter your approximate net monthly salaries:'}
-                    </span>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1">
+                  <div
+                    className="pt-3 border-t border-zinc-200/80 dark:border-zinc-700/60 space-y-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div>
+                      <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block">
+                        {language === 'es' ? 'Sueldos netos y tipo de nómina de cada uno:' : 'Net salaries and income type for each partner:'}
+                      </span>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        {language === 'es'
+                          ? 'Indica si tienes nómina fija o ingresos variables (autónomo, comisiones, extras).'
+                          : 'Select whether each partner has a fixed salary or variable income (freelance, bonuses).'}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {/* Partner 1 */}
+                      <div className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-900/90 space-y-2">
                         <div className="flex items-center justify-between">
-                          <label className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 block">{partner1Name || 'Tú'}</label>
+                          <label className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                            {partner1Name || 'Tú'}
+                          </label>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                            partner1IncomeType === 'variable'
+                              ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300'
+                              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                          }`}>
+                            {partner1IncomeType === 'variable' ? `🔄 ${t('variableTag')}` : `📌 ${t('fixedTag')}`}
+                          </span>
+                        </div>
+
+                        <div className="relative">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={partner1Income}
+                            onChange={(e) => setPartner1Income(e.target.value)}
+                            placeholder="1800"
+                            className="w-full pl-2.5 pr-7 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80 text-xs font-mono font-bold text-zinc-900 dark:text-white"
+                          />
+                          <span className="absolute right-2.5 top-1.5 text-xs text-zinc-400 font-bold">{currencySymbol}</span>
+                        </div>
+
+                        {/* Explicit Fixed vs Variable selector */}
+                        <div className="grid grid-cols-2 gap-1 pt-1">
                           <button
                             type="button"
-                            onClick={() => setPartner1IncomeType(partner1IncomeType === 'fixed' ? 'variable' : 'fixed')}
-                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded transition-all ${
-                              partner1IncomeType === 'variable'
-                                ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300'
-                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+                            onClick={() => setPartner1IncomeType('fixed')}
+                            className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                              partner1IncomeType === 'fixed'
+                                ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold shadow-2xs'
+                                : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
                             }`}
                           >
-                            {partner1IncomeType === 'variable' ? `🔄 ${t('variableTag')}` : `📌 ${t('fixedTag')}`}
+                            📌 {t('fixedTag')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPartner1IncomeType('variable')}
+                            className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                              partner1IncomeType === 'variable'
+                                ? 'border-amber-600 dark:border-amber-500 bg-amber-500 text-white font-bold shadow-2xs'
+                                : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+                            }`}
+                          >
+                            🔄 {t('variableTag')}
                           </button>
                         </div>
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          value={partner1Income}
-                          onChange={(e) => setPartner1Income(e.target.value)}
-                          placeholder="1800"
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs font-mono font-bold"
-                        />
                       </div>
 
-                      <div className="space-y-1">
+                      {/* Partner 2 */}
+                      <div className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-900/90 space-y-2">
                         <div className="flex items-center justify-between">
-                          <label className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 block">{partner2Name || 'Pareja'}</label>
+                          <label className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                            {partner2Name || 'Pareja'}
+                          </label>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                            partner2IncomeType === 'variable'
+                              ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300'
+                              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                          }`}>
+                            {partner2IncomeType === 'variable' ? `🔄 ${t('variableTag')}` : `📌 ${t('fixedTag')}`}
+                          </span>
+                        </div>
+
+                        <div className="relative">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={partner2Income}
+                            onChange={(e) => setPartner2Income(e.target.value)}
+                            placeholder="1200"
+                            className="w-full pl-2.5 pr-7 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80 text-xs font-mono font-bold text-zinc-900 dark:text-white"
+                          />
+                          <span className="absolute right-2.5 top-1.5 text-xs text-zinc-400 font-bold">{currencySymbol}</span>
+                        </div>
+
+                        {/* Explicit Fixed vs Variable selector */}
+                        <div className="grid grid-cols-2 gap-1 pt-1">
                           <button
                             type="button"
-                            onClick={() => setPartner2IncomeType(partner2IncomeType === 'fixed' ? 'variable' : 'fixed')}
-                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded transition-all ${
-                              partner2IncomeType === 'variable'
-                                ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300'
-                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+                            onClick={() => setPartner2IncomeType('fixed')}
+                            className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                              partner2IncomeType === 'fixed'
+                                ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold shadow-2xs'
+                                : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
                             }`}
                           >
-                            {partner2IncomeType === 'variable' ? `🔄 ${t('variableTag')}` : `📌 ${t('fixedTag')}`}
+                            📌 {t('fixedTag')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPartner2IncomeType('variable')}
+                            className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                              partner2IncomeType === 'variable'
+                                ? 'border-amber-600 dark:border-amber-500 bg-amber-500 text-white font-bold shadow-2xs'
+                                : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+                            }`}
+                          >
+                            🔄 {t('variableTag')}
                           </button>
                         </div>
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          value={partner2Income}
-                          onChange={(e) => setPartner2Income(e.target.value)}
-                          placeholder="1200"
-                          className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs font-mono font-bold"
-                        />
                       </div>
                     </div>
 
-                    <div className="p-2 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-700/60 flex items-center justify-between text-xs font-mono">
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-700/60 flex items-center justify-between text-xs font-mono">
                       <span className="text-zinc-500">{language === 'es' ? 'Reparto calculado:' : 'Calculated split:'}</span>
                       <span className="font-black text-zinc-900 dark:text-white">
                         {partner1Name || 'Tú'}: {p1Ratio}% • {partner2Name || 'Pareja'}: {p2Ratio}%
@@ -338,6 +410,92 @@ export default function OnboardingWizard() {
                     ? 'Todos los gastos de la casa se dividen a partes exactamente iguales independientemente de los ingresos de cada uno.'
                     : 'All household expenses are divided exactly 50/50 regardless of salary differences.'}
                 </p>
+
+                {splitMode === 'equal' && (
+                  <div
+                    className="pt-3 border-t border-zinc-200/80 dark:border-zinc-700/60 space-y-2.5"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block">
+                      {language === 'es' ? 'Tipo de nómina de cada uno:' : 'Income type for each partner:'}
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-900/90 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{partner1Name || 'Tú'}</span>
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                            partner1IncomeType === 'variable'
+                              ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300'
+                              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                          }`}>
+                            {partner1IncomeType === 'variable' ? `🔄 ${t('variableTag')}` : `📌 ${t('fixedTag')}`}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setPartner1IncomeType('fixed')}
+                            className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                              partner1IncomeType === 'fixed'
+                                ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold shadow-2xs'
+                                : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:bg-zinc-50'
+                            }`}
+                          >
+                            📌 {t('fixedTag')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPartner1IncomeType('variable')}
+                            className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                              partner1IncomeType === 'variable'
+                                ? 'border-amber-600 bg-amber-500 text-white font-bold shadow-2xs'
+                                : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:bg-zinc-50'
+                            }`}
+                          >
+                            🔄 {t('variableTag')}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-white dark:bg-zinc-900/90 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{partner2Name || 'Pareja'}</span>
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                            partner2IncomeType === 'variable'
+                              ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300'
+                              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                          }`}>
+                            {partner2IncomeType === 'variable' ? `🔄 ${t('variableTag')}` : `📌 ${t('fixedTag')}`}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setPartner2IncomeType('fixed')}
+                            className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                              partner2IncomeType === 'fixed'
+                                ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold shadow-2xs'
+                                : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:bg-zinc-50'
+                            }`}
+                          >
+                            📌 {t('fixedTag')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPartner2IncomeType('variable')}
+                            className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold border transition-all text-center ${
+                              partner2IncomeType === 'variable'
+                                ? 'border-amber-600 bg-amber-500 text-white font-bold shadow-2xs'
+                                : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:bg-zinc-50'
+                            }`}
+                          >
+                            🔄 {t('variableTag')}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

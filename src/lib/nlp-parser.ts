@@ -394,9 +394,13 @@ export function parseExpenseMessage(
   const p1Name = settings.partner1Name || 'Tú';
   const p2Name = settings.partner2Name || 'Pareja';
 
+  const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const safeP1Name = escapeRegExp(p1Name);
+  const safeP2Name = escapeRegExp(p2Name);
+
   const isExplicitCommon = /\b(comun|común|cuenta comun|cuenta común|casa|conjunto|joint|common|household|shared)\b/i.test(remainingText);
-  const isP1Mention = new RegExp(`\\b(${p1Name}|yo|mio|mío|me|i paid|paid by ${p1Name})\\b`, 'i').test(remainingText);
-  const isP2Mention = new RegExp(`\\b(${p2Name}|ella|el|él|suyo|suya|paid by ${p2Name})\\b`, 'i').test(remainingText);
+  const isP1Mention = new RegExp(`\\b(${safeP1Name}|yo|mio|mío|me|i paid|paid by ${safeP1Name})\\b`, 'i').test(remainingText);
+  const isP2Mention = new RegExp(`\\b(${safeP2Name}|ella|él|suyo|suya|paid by ${safeP2Name})\\b`, 'i').test(remainingText);
   const isAdvanceWord = /\b(adelanto|adelante|adelanté|pague|pagué|pago yo|pagó|anticipo|out of pocket|pocket advance|advance)\b/i.test(remainingText);
 
   if (isExplicitCommon) {
@@ -404,10 +408,10 @@ export function parseExpenseMessage(
     remainingText = remainingText.replace(/\b(comun|común|cuenta comun|cuenta común|casa|conjunto|joint|common|household|shared)\b/gi, '').trim();
   } else if (isP1Mention) {
     paidBy = 'partner1';
-    remainingText = remainingText.replace(new RegExp(`\\b(${p1Name}|yo|mio|mío|me|i paid|paid by ${p1Name})\\b`, 'gi'), '').trim();
+    remainingText = remainingText.replace(new RegExp(`\\b(${safeP1Name}|yo|mio|mío|me|i paid|paid by ${safeP1Name})\\b`, 'gi'), '').trim();
   } else if (isP2Mention) {
     paidBy = 'partner2';
-    remainingText = remainingText.replace(new RegExp(`\\b(${p2Name}|ella|el|él|suyo|suya|paid by ${p2Name})\\b`, 'gi'), '').trim();
+    remainingText = remainingText.replace(new RegExp(`\\b(${safeP2Name}|ella|él|suyo|suya|paid by ${safeP2Name})\\b`, 'gi'), '').trim();
   } else if (isAdvanceWord) {
     remainingText = remainingText.replace(/\b(adelanto|adelante|adelanté|pague|pagué|pago yo|pagó|anticipo|out of pocket|pocket advance|advance)\b/gi, '').trim();
     if (senderNameOrPhone) {

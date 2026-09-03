@@ -22,7 +22,9 @@ let dynamicGroupName = '';
 async function fetchDynamicSettings() {
   try {
     const settingsUrl = CASAFINANCE_API_URL.replace('/api/bot', '/api/settings');
-    const res = await fetch(settingsUrl);
+    const headers = {};
+    if (BOT_API_TOKEN) headers['Authorization'] = `Bearer ${BOT_API_TOKEN}`;
+    const res = await fetch(settingsUrl, { headers });
     if (res.ok) {
       const data = await res.json();
       if (data.whatsappGroupName) {
@@ -105,9 +107,11 @@ const STATUS_API_URL = CASAFINANCE_API_URL.replace('/api/bot', '/api/bot/status'
 
 async function postStatus(payload) {
   try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (BOT_API_TOKEN) headers['Authorization'] = `Bearer ${BOT_API_TOKEN}`;
     await fetch(STATUS_API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(payload),
     });
   } catch (e) {
@@ -132,9 +136,11 @@ async function startBot() {
   // Periodic poll to check if user clicked "Disconnect" from CasaFinance Web UI
   const logoutInterval = setInterval(async () => {
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (BOT_API_TOKEN) headers['Authorization'] = `Bearer ${BOT_API_TOKEN}`;
       const res = await fetch(STATUS_API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ action: 'check_logout' }),
       });
       if (res.ok) {

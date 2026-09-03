@@ -20,7 +20,22 @@ if (!g.__casafinance_bot_state) {
   };
 }
 
+function isAuthenticated(req: NextRequest): boolean {
+  const adminToken = process.env.ADMIN_TOKEN;
+  const botToken = process.env.BOT_API_TOKEN;
+  if (!adminToken && !botToken) return true;
+  const authHeader = req.headers.get('authorization');
+  const providedToken = authHeader?.replace('Bearer ', '')?.trim();
+  if (adminToken && providedToken === adminToken) return true;
+  if (botToken && providedToken === botToken) return true;
+  return false;
+}
+
 export async function GET(req: NextRequest) {
+  if (!isAuthenticated(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const state = g.__casafinance_bot_state!;
   
   // If QR was not refreshed in the last 60 seconds and still in qr_ready, treat as expired
@@ -39,6 +54,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!isAuthenticated(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const state = g.__casafinance_bot_state!;
@@ -73,7 +92,11 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(req: NextRequest) {
+  if (!isAuthenticated(req)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const state = g.__casafinance_bot_state!;
   state.status = 'disconnected';
   state.qrDataUrl = undefined;

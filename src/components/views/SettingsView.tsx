@@ -127,7 +127,7 @@ export default function SettingsView() {
   const [backupError, setBackupError] = useState('');
 
   // Version & Updates
-  const CURRENT_VERSION = 'v1.0.2';
+  const CURRENT_VERSION = 'v1.0.3';
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<{
     checked: boolean;
@@ -237,7 +237,10 @@ export default function SettingsView() {
     let timer: NodeJS.Timeout;
     const checkStatus = async () => {
       try {
-        const res = await fetch('/api/bot/status');
+        const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') || '' : '';
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch('/api/bot/status', { headers });
         if (res.ok) {
           const data = await res.json();
           setWhatsappStatus(data.status || 'disconnected');
@@ -259,7 +262,10 @@ export default function SettingsView() {
     if (!window.confirm(t('whatsappDisconnectConfirm'))) return;
     setIsDisconnectingWhatsapp(true);
     try {
-      await fetch('/api/bot/status', { method: 'DELETE' });
+      const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') || '' : '';
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      await fetch('/api/bot/status', { method: 'DELETE', headers });
       setWhatsappStatus('disconnected');
       setWhatsappQrDataUrl(null);
     } catch (e) {

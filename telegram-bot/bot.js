@@ -17,7 +17,9 @@ function normalizeText(str) {
 async function fetchDynamicSettings() {
   try {
     const settingsUrl = CASAFINANCE_API_URL.replace('/api/bot', '/api/settings');
-    const res = await fetch(settingsUrl);
+    const headers = {};
+    if (BOT_API_TOKEN) headers['Authorization'] = `Bearer ${BOT_API_TOKEN}`;
+    const res = await fetch(settingsUrl, { headers });
     if (res.ok) {
       const data = await res.json();
       if (data.telegramBotToken) {

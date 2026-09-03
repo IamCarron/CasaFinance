@@ -5,11 +5,17 @@ import { NextResponse } from 'next/server';
 import { getSettings, updateSettings } from '@/lib/db';
 
 function isAuthorized(req: Request) {
-  const expectedToken = process.env.ADMIN_TOKEN;
-  if (!expectedToken) return true;
+  const adminToken = process.env.ADMIN_TOKEN;
+  const botToken = process.env.BOT_API_TOKEN;
+  if (!adminToken && !botToken) return true;
+  
   const authHeader = req.headers.get('Authorization');
   const token = authHeader?.split(' ')[1];
-  return token === expectedToken;
+  
+  if (adminToken && token === adminToken) return true;
+  if (botToken && token === botToken) return true;
+  
+  return false;
 }
 
 export async function GET(req: Request) {
