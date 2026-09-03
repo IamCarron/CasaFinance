@@ -158,23 +158,33 @@ function seedInitialData(db: DatabaseSync) {
     }
   }
 
-  // Check categories
-  const hasCategories = db.prepare('SELECT count(*) as count FROM categories').get() as { count: number | bigint };
-  if (Number(hasCategories.count) === 0) {
-    const defaultCategories = [
-      { id: 'cat-1', name: 'Alquiler / Hipoteca', icon: 'Home', color: '#10b981', is_default: 1 },
-      { id: 'cat-2', name: 'Supermercado & Alimentación', icon: 'ShoppingCart', color: '#3b82f6', is_default: 1 },
-      { id: 'cat-3', name: 'Facturas (Luz, Agua, Gas, WiFi)', icon: 'Zap', color: '#f59e0b', is_default: 1 },
-      { id: 'cat-4', name: 'Suscripciones (Netflix, Spotify...)', icon: 'Tv', color: '#8b5cf6', is_default: 1 },
-      { id: 'cat-5', name: 'Transporte & Gasolina', icon: 'Car', color: '#ec4899', is_default: 1 },
-      { id: 'cat-6', name: 'Ocio & Cenas Fuera', icon: 'Utensils', color: '#f97316', is_default: 1 },
-      { id: 'cat-7', name: 'Fondo de Ahorro e Imprevistos', icon: 'PiggyBank', color: '#06b6d4', is_default: 1 },
-      { id: 'cat-8', name: 'Otros Gastos', icon: 'Receipt', color: '#64748b', is_default: 1 },
-    ];
+  // Check and seed default categories (ensuring existing databases get missing categories)
+  const defaultCategories = [
+    { id: 'cat-1', name: 'Alquiler / Hipoteca', icon: 'Home', color: '#10b981', is_default: 1 },
+    { id: 'cat-2', name: 'Supermercado & Alimentación', icon: 'ShoppingCart', color: '#3b82f6', is_default: 1 },
+    { id: 'cat-3', name: 'Facturas (Luz, Agua, Gas, WiFi)', icon: 'Zap', color: '#f59e0b', is_default: 1 },
+    { id: 'cat-4', name: 'Suscripciones (Netflix, Spotify...)', icon: 'Tv', color: '#8b5cf6', is_default: 1 },
+    { id: 'cat-5', name: 'Transporte & Gasolina', icon: 'Car', color: '#ec4899', is_default: 1 },
+    { id: 'cat-6', name: 'Ocio & Cenas Fuera', icon: 'Utensils', color: '#f97316', is_default: 1 },
+    { id: 'cat-7', name: 'Fondo de Ahorro e Imprevistos', icon: 'PiggyBank', color: '#06b6d4', is_default: 1 },
+    { id: 'cat-salud', name: 'Farmacia & Salud', icon: 'Pill', color: '#14b8a6', is_default: 1 },
+    { id: 'cat-mascotas', name: 'Mascotas & Veterinario', icon: 'Dog', color: '#84cc16', is_default: 1 },
+    { id: 'cat-hogar', name: 'Hogar & Bricolaje', icon: 'Wrench', color: '#6366f1', is_default: 1 },
+    { id: 'cat-ropa', name: 'Ropa & Calzado', icon: 'Shirt', color: '#a855f7', is_default: 1 },
+    { id: 'cat-personal', name: 'Cuidado Personal & Peluquería', icon: 'Scissors', color: '#f43f5e', is_default: 1 },
+    { id: 'cat-viajes', name: 'Viajes & Vacaciones', icon: 'Plane', color: '#0284c7', is_default: 1 },
+    { id: 'cat-educacion', name: 'Niños & Educación', icon: 'Baby', color: '#eab308', is_default: 1 },
+    { id: 'cat-deporte', name: 'Deportes & Gimnasio', icon: 'Dumbbell', color: '#059669', is_default: 1 },
+    { id: 'cat-seguros', name: 'Seguros & Impuestos', icon: 'Shield', color: '#475569', is_default: 1 },
+    { id: 'cat-8', name: 'Otros Gastos', icon: 'Receipt', color: '#64748b', is_default: 1 },
+  ];
 
-    const insertCat = db.prepare('INSERT INTO categories (id, name, icon, color, is_default, created_at) VALUES (?, ?, ?, ?, ?, ?)');
-    const now = new Date().toISOString();
-    for (const c of defaultCategories) {
+  const checkCat = db.prepare('SELECT id FROM categories WHERE id = ? OR LOWER(name) = ?');
+  const insertCat = db.prepare('INSERT INTO categories (id, name, icon, color, is_default, created_at) VALUES (?, ?, ?, ?, ?, ?)');
+  const now = new Date().toISOString();
+  for (const c of defaultCategories) {
+    const existing = checkCat.get(c.id, c.name.toLowerCase());
+    if (!existing) {
       insertCat.run(c.id, c.name, c.icon, c.color, c.is_default, now);
     }
   }

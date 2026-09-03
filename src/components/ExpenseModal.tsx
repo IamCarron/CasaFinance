@@ -3,6 +3,7 @@ import { X, CreditCard, User, Users, Check, Calendar, Tag, FileText, Camera, Spa
 import { Category, Expense, PaidBy, SplitBetween, UserSettings } from '@/lib/types';
 import { useHousehold } from '@/context/HouseholdContext';
 import { CategoryIcon } from './Icons';
+import { findBestCategoryMatch } from '@/lib/nlp-parser';
 
 interface ExpenseModalProps {
   isOpen: boolean;
@@ -36,6 +37,10 @@ export default function ExpenseModal({
   const [notes, setNotes] = useState('');
   const [receiptUrl, setReceiptUrl] = useState<string | undefined>(undefined);
 
+  // Natural Language Auto-Categorization
+  const [autoMatchedCategory, setAutoMatchedCategory] = useState<string | null>(null);
+  const [userManuallySelectedCategory, setUserManuallySelectedCategory] = useState(false);
+
   const [isScanning, setIsScanning] = useState(false);
   const [scanWarning, setScanWarning] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,6 +57,8 @@ export default function ExpenseModal({
       setSplitModeOverride(editingExpense.splitModeOverride || null);
       setNotes(editingExpense.notes || '');
       setReceiptUrl(editingExpense.receiptUrl);
+      setUserManuallySelectedCategory(true);
+      setAutoMatchedCategory(null);
     } else {
       // Default to today or first day of selected month
       const today = new Date().toISOString().split('T')[0];
@@ -69,6 +76,8 @@ export default function ExpenseModal({
       setSplitModeOverride(null);
       setNotes('');
       setReceiptUrl(undefined);
+      setUserManuallySelectedCategory(false);
+      setAutoMatchedCategory(null);
     }
     setError('');
     setScanWarning('');
@@ -130,6 +139,38 @@ export default function ExpenseModal({
       setError('Error leyendo archivo');
       setIsScanning(false);
     }
+  };
+
+  const handleTitleChange = (val: string) => {
+    setTitle(val);
+
+    // Natural Language quick-capture: check if user typed an amount + concept (e.g. "42.50 Mercadona" or "15 Farmacia")
+    const startAmountRegex = /^([$€£])?\s*(\d+(?:[.,]\d{1,2})?)\s*(?:€|\$|£|eur|euros|usd|gbp)?\s+(.+)/i;
+    const match = val.match(startAmountRegex);
+    let concept = val;
+
+    if (match && (!amount || amount === '' || amount === '0')) {
+      const detectedAmount = match[2].replace(',', '.');
+      setAmount(detectedAmount);
+      concept = match[3];
+    }
+
+    // Auto-detect category with natural language if user hasn't manually locked one
+    if (!userManuallySelectedCategory && concept.trim().length > 1) {
+      const matchResult = findBestCategoryMatch(concept, categories);
+      if (matchResult) {
+        setCategoryId(matchResult.categoryId);
+        setAutoMatchedCategory(matchResult.categoryName);
+      } else {
+        setAutoMatchedCategory(null);
+      }
+    }
+  };
+
+  const handleCategoryChange = (val: string) => {
+    setCategoryId(val);
+    setUserManuallySelectedCategory(true);
+    setAutoMatchedCategory(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -305,7 +346,7 @@ export default function ExpenseModal({
                 required
                 placeholder={t('conceptPlaceholder')}
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => handleTitleChange(e.target.value)}
                 className="w-full px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-900 dark:text-white text-xs focus:outline-none focus:ring-1 focus:ring-zinc-400"
               />
             </div>
@@ -329,12 +370,19 @@ export default function ExpenseModal({
           {/* Categoría y Fecha */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                {t('category')}
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  {t('category')}
+                </label>
+                {autoMatchedCategory && (
+                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 rounded-full flex items-center gap-1 animate-in fade-in duration-200">
+                    ✨ {language === 'es' ? 'Auto-detectada' : 'Auto-detected'}
+                  </span>
+                )}
+              </div>
               <select
                 value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
+                onChange={(e) => handleCategoryChange(e.target.value)}
                 className="w-full px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-900 dark:text-white text-xs focus:outline-none focus:ring-1 focus:ring-zinc-400"
               >
                 {categories.map((cat) => (

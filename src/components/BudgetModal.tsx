@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Check } from 'lucide-react';
 import { Category, FixedBudgetItem, UserSettings } from '@/lib/types';
 import { useHousehold } from '@/context/HouseholdContext';
+import { findBestCategoryMatch } from '@/lib/nlp-parser';
 
 interface BudgetModalProps {
   isOpen: boolean;
@@ -22,7 +23,8 @@ export default function BudgetModal({
   settings,
   editingItem,
 }: BudgetModalProps) {
-  const { t } = useHousehold();
+  const { t, language } = useHousehold();
+
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [categoryId, setCategoryId] = useState('');
@@ -32,6 +34,10 @@ export default function BudgetModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  // Auto-categorization
+  const [autoMatchedCategory, setAutoMatchedCategory] = useState<string | null>(null);
+  const [userManuallySelectedCategory, setUserManuallySelectedCategory] = useState(false);
+
   useEffect(() => {
     if (editingItem) {
       setName(editingItem.name);
@@ -40,18 +46,41 @@ export default function BudgetModal({
       setNotes(editingItem.notes || '');
       setSplitOverride(editingItem.splitModeOverride === 'equal' ? 'equal' : 'default');
       setIsActive(editingItem.isActive);
+      setUserManuallySelectedCategory(true);
+      setAutoMatchedCategory(null);
     } else {
       setName('');
       setAmount('');
-      setCategoryId(categories[0]?.id || 'cat-vivienda');
+      setCategoryId(categories[0]?.id || 'cat-1');
       setNotes('');
       setSplitOverride('default');
       setIsActive(true);
+      setUserManuallySelectedCategory(false);
+      setAutoMatchedCategory(null);
     }
     setError('');
   }, [editingItem, isOpen, categories]);
 
   if (!isOpen) return null;
+
+  const handleNameChange = (val: string) => {
+    setName(val);
+    if (!userManuallySelectedCategory && val.trim().length > 1) {
+      const match = findBestCategoryMatch(val, categories);
+      if (match) {
+        setCategoryId(match.categoryId);
+        setAutoMatchedCategory(match.categoryName);
+      } else {
+        setAutoMatchedCategory(null);
+      }
+    }
+  };
+
+  const handleCategoryChange = (val: string) => {
+    setCategoryId(val);
+    setUserManuallySelectedCategory(true);
+    setAutoMatchedCategory(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,7 +171,7 @@ export default function BudgetModal({
               required
               placeholder={t('budgetNamePlaceholder')}
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => handleNameChange(e.target.value)}
               className="w-full px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-900 dark:text-white text-xs focus:outline-none focus:ring-1 focus:ring-zinc-400"
             />
           </div>
@@ -164,12 +193,19 @@ export default function BudgetModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                {t('category')}
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  {t('category')}
+                </label>
+                {autoMatchedCategory && (
+                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 rounded-full flex items-center gap-1 animate-in fade-in duration-200">
+                    ✨ {language === 'es' ? 'Auto-detectada' : 'Auto-detected'}
+                  </span>
+                )}
+              </div>
               <select
                 value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
+                onChange={(e) => handleCategoryChange(e.target.value)}
                 className="w-full px-3.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 text-zinc-900 dark:text-white text-xs focus:outline-none focus:ring-1 focus:ring-zinc-400"
               >
                 {categories.map((cat) => (
