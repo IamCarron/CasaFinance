@@ -127,7 +127,7 @@ function initSchema(db: DatabaseSync) {
   seedInitialData(db);
 }
 
-function seedInitialData(db: DatabaseSync) {
+export function seedInitialData(db: DatabaseSync) {
   // Check settings
   const hasSettings = db.prepare('SELECT count(*) as count FROM settings').get() as { count: number | bigint };
   if (Number(hasSettings.count) === 0) {
@@ -142,6 +142,8 @@ function seedInitialData(db: DatabaseSync) {
       currencyCode: 'EUR',
       isOnboarded: false,
       incomeType: 'fixed',
+      partner1IncomeType: 'fixed',
+      partner2IncomeType: 'fixed',
       ocrProvider: 'ollama',
       ocrEndpoint: 'http://localhost:11434/api/generate',
       ocrModel: 'llama3.2-vision',
@@ -187,6 +189,34 @@ function seedInitialData(db: DatabaseSync) {
     if (!existing) {
       insertCat.run(c.id, c.name, c.icon, c.color, c.is_default, now);
     }
+  }
+}
+
+export function resetDatabase() {
+  const db = getDb();
+  db.exec('BEGIN TRANSACTION');
+  try {
+    // 1. Delete dependent tables first to respect foreign keys
+    db.exec('DELETE FROM expenses');
+    db.exec('DELETE FROM fixed_budget');
+    db.exec('DELETE FROM savings_goals');
+    db.exec('DELETE FROM monthly_incomes');
+    
+    // 2. Clear categories and settings
+    db.exec('DELETE FROM categories');
+    db.exec('DELETE FROM settings');
+
+    try {
+      db.exec('DELETE FROM sqlite_sequence');
+    } catch (e) {}
+
+    // 3. Re-seed default settings & all 17 standard household categories
+    seedInitialData(db);
+    
+    db.exec('COMMIT');
+  } catch (err) {
+    try { db.exec('ROLLBACK'); } catch (e) {}
+    throw err;
   }
 }
 
