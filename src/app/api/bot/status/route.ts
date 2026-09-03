@@ -33,7 +33,7 @@ function isAuthenticated(req: NextRequest): boolean {
 
 export async function GET(req: NextRequest) {
   if (!isAuthenticated(req)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized: Admin or Bot token required to view pairing status' }, { status: 401 });
   }
 
   const state = g.__casafinance_bot_state!;

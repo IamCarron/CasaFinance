@@ -9,10 +9,10 @@ const RECEIPTS_DIR = path.join(process.cwd(), 'data', 'receipts');
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { filename: string } }
+  { params }: { params: Promise<{ filename: string }> }
 ) {
   try {
-    const filename = params.filename;
+    const { filename } = await params;
     // Sanitize filename to prevent directory traversal
     const safeFilename = path.basename(filename);
     const filePath = path.join(RECEIPTS_DIR, safeFilename);
@@ -36,6 +36,7 @@ export async function GET(
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
+        'X-Content-Type-Options': 'nosniff',
       },
     });
   } catch (error: any) {

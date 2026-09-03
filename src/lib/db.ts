@@ -478,14 +478,18 @@ export function exportAllData() {
   const categories = getCategories();
   const budget = getFixedBudgetItems();
   const expenses = getExpenses();
+  const savingsGoals = getSavingsGoals();
+  const monthlyIncomes = getAllMonthlyIncomes();
 
   return {
-    version: '1.0',
+    version: '1.1',
     exportedAt: new Date().toISOString(),
     settings,
     categories,
     budget,
     expenses,
+    savingsGoals,
+    monthlyIncomes,
   };
 }
 
@@ -493,7 +497,7 @@ export function importAllData(data: any): boolean {
   const db = getDb();
   db.exec('BEGIN TRANSACTION;');
   try {
-    // Update settings inline (don't call updateSettings which has its own transaction)
+    // 1. Settings inline
     if (data.settings) {
       const update = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)');
       for (const [k, v] of Object.entries(data.settings)) {
@@ -502,6 +506,8 @@ export function importAllData(data: any): boolean {
         }
       }
     }
+
+    // 2. Categories
     if (Array.isArray(data.categories)) {
       // First delete dependents that reference these categories
       db.prepare('DELETE FROM expenses').run();
@@ -509,9 +515,11 @@ export function importAllData(data: any): boolean {
       db.prepare('DELETE FROM categories').run();
       const insertCat = db.prepare('INSERT INTO categories (id, name, icon, color, is_default, created_at) VALUES (?, ?, ?, ?, ?, ?)');
       for (const c of data.categories) {
-        insertCat.run(c.id, c.name, c.icon, c.color, c.isDefault ? 1 : 0, new Date().toISOString());
+        insertCat.run(c.id, c.name, c.icon, c.color, c.isDefault || c.is_default ? 1 : 0, new Date().toISOString());
       }
     }
+
+    // 3. Fixed Budget
     if (Array.isArray(data.budget)) {
       db.prepare('DELETE FROM fixed_budget').run();
       const insertB = db.prepare(`
@@ -520,20 +528,93 @@ export function importAllData(data: any): boolean {
       `);
       for (const b of data.budget) {
         const id = b.id || `b-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        insertB.run(id, b.categoryId, b.name, b.amount, b.splitModeOverride || null, b.notes || '', b.isActive !== false ? 1 : 0);
+        insertB.run(
+          id, 
+          b.categoryId || b.category_id, 
+          b.name, 
+          b.amount, 
+          b.splitModeOverride || b.split_mode_override || null, 
+          b.notes || '', 
+          b.isActive !== false && b.is_active !== 0 ? 1 : 0
+        );
       }
     }
+
+    // 4. Expenses (with receipt_url and is_settlement preserved)
     if (Array.isArray(data.expenses)) {
       db.prepare('DELETE FROM expenses').run();
       const insertE = db.prepare(`
-        INSERT INTO expenses (id, title, amount, date, category_id, paid_by, split_between, split_mode_override, notes, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO expenses (id, title, amount, date, category_id, paid_by, split_between, split_mode_override, notes, receipt_url, is_settlement, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       for (const e of data.expenses) {
         const id = e.id || `exp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        insertE.run(id, e.title, e.amount, e.date, e.categoryId, e.paidBy, e.splitBetween, e.splitModeOverride || null, e.notes || '', e.createdAt || new Date().toISOString());
+        const isSettlement = Boolean(e.isSettlement || e.is_settlement) ||
+          (typeof e.title === 'string' && (
+            e.title.startsWith('Compensación de gastos') || 
+            e.title.startsWith('Liquidación') || 
+            e.title.startsWith('Settlement')
+          ));
+
+        insertE.run(
+          id, 
+          e.title, 
+          e.amount, 
+          e.date, 
+          e.categoryId || e.category_id, 
+          e.paidBy || e.paid_by, 
+          e.splitBetween || e.split_between, 
+          e.splitModeOverride || e.split_mode_override || null, 
+          e.notes || '', 
+          e.receiptUrl || e.receipt_url || null, 
+          isSettlement ? 1 : 0, 
+          e.createdAt || e.created_at || new Date().toISOString()
+        );
       }
     }
+
+    // 5. Savings Goals
+    const savingsGoalsList = data.savingsGoals || data.savings_goals;
+    if (Array.isArray(savingsGoalsList)) {
+      db.prepare('DELETE FROM savings_goals').run();
+      const insertSG = db.prepare(`
+        INSERT INTO savings_goals (id, name, target_amount, current_amount, icon, color, target_date, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const sg of savingsGoalsList) {
+        const id = sg.id || `sg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        insertSG.run(
+          id,
+          sg.name,
+          sg.targetAmount ?? sg.target_amount ?? 0,
+          sg.currentAmount ?? sg.current_amount ?? 0,
+          sg.icon || 'PiggyBank',
+          sg.color || '#10b981',
+          sg.targetDate || sg.target_date || null,
+          sg.createdAt || sg.created_at || new Date().toISOString()
+        );
+      }
+    }
+
+    // 6. Monthly Incomes (Overrides & Bonuses)
+    const monthlyIncomesList = data.monthlyIncomes || data.monthly_incomes;
+    if (Array.isArray(monthlyIncomesList)) {
+      db.prepare('DELETE FROM monthly_incomes').run();
+      const insertMI = db.prepare(`
+        INSERT INTO monthly_incomes (month, partner1_income, partner2_income, notes, created_at)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+      for (const mi of monthlyIncomesList) {
+        insertMI.run(
+          mi.month,
+          mi.partner1Income ?? mi.partner1_income ?? 0,
+          mi.partner2Income ?? mi.partner2_income ?? 0,
+          mi.notes || null,
+          mi.createdAt || mi.created_at || new Date().toISOString()
+        );
+      }
+    }
+
     db.exec('COMMIT;');
     return true;
   } catch (err) {
@@ -645,13 +726,17 @@ export function getMonthlyTrends(monthsCount = 6): MonthlyTrendPoint[] {
     const monthNamesEs = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     const label = `${monthNamesEs[d.getMonth()]} ${String(yyyy).slice(2)}`;
 
-    // Total spent in this month
+    // Total spent in this month (excluding internal settlement transfers)
     const totalRow = db.prepare(`
       SELECT 
         COALESCE(SUM(amount), 0) as totalSpent,
         COALESCE(SUM(CASE WHEN paid_by != 'common' THEN amount ELSE 0 END), 0) as outOfPocket
       FROM expenses
       WHERE date LIKE ?
+        AND (is_settlement IS NULL OR is_settlement = 0)
+        AND title NOT LIKE 'Compensación de gastos%'
+        AND title NOT LIKE 'Liquidación%'
+        AND title NOT LIKE 'Settlement%'
     `).get(`${monthKey}%`) as { totalSpent: number; outOfPocket: number };
 
     results.push({
@@ -714,5 +799,16 @@ export function deleteMonthlyIncome(month: string): boolean {
   const db = getDb();
   db.prepare('DELETE FROM monthly_incomes WHERE month = ?').run(month);
   return true;
+}
+
+export function getAllMonthlyIncomes(): Array<{ month: string; partner1Income: number; partner2Income: number; notes?: string }> {
+  const db = getDb();
+  const rows = db.prepare('SELECT month, partner1_income, partner2_income, notes FROM monthly_incomes ORDER BY month ASC').all() as any[];
+  return rows.map(r => ({
+    month: r.month,
+    partner1Income: Number(r.partner1_income),
+    partner2Income: Number(r.partner2_income),
+    notes: r.notes || undefined,
+  }));
 }
 

@@ -82,8 +82,26 @@ export default function ExpensesView() {
     setDeletingId(null);
   };
 
-  const handleExportCsv = () => {
-    window.location.href = `/api/expenses/export?month=${currentMonth}`;
+  const handleExportCsv = async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') || '' : '';
+      const res = await fetch(`/api/expenses/export?month=${currentMonth}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = currentMonth ? `casafinance-gastos-${currentMonth}.csv` : 'casafinance-todos-los-gastos.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        alert('Error al exportar gastos: No autorizado.');
+      }
+    } catch {
+      alert('Error de conexión al exportar gastos.');
+    }
   };
 
   return (

@@ -97,10 +97,14 @@ export default function ExpenseModal({
       const reader = new FileReader();
       reader.onload = async () => {
         const base64 = reader.result as string;
+        const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') || '' : '';
         try {
           const res = await fetch('/api/ocr', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
             body: JSON.stringify({
               imageBase64: base64,
               filename: file.name,

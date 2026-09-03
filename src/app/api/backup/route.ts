@@ -6,10 +6,23 @@ import { exportAllData, importAllData } from '@/lib/db';
 
 function isAuthorized(req: Request) {
   const expectedToken = process.env.ADMIN_TOKEN;
-  if (!expectedToken) return true;
-  const authHeader = req.headers.get('Authorization');
-  const token = authHeader?.split(' ')[1];
-  return token === expectedToken;
+  const botToken = process.env.BOT_API_TOKEN;
+  const isProd = process.env.NODE_ENV === 'production';
+
+  // 1. If ADMIN_TOKEN is set, it MUST match
+  if (expectedToken) {
+    const authHeader = req.headers.get('Authorization');
+    const token = authHeader?.split(' ')[1];
+    return token === expectedToken;
+  }
+
+  // 2. In production or when bot tokens are configured, anonymous backup operations are strictly forbidden
+  if (isProd || botToken) {
+    return false;
+  }
+
+  // 3. Only allowed in non-production local development without any tokens
+  return true;
 }
 
 export async function GET(req: Request) {

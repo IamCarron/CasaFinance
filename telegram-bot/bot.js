@@ -86,8 +86,14 @@ async function startPolling() {
           const chat = msg.chat;
           const isGroup = chat.type === 'group' || chat.type === 'supergroup';
 
-          // Group verification if configured
-          if (isGroup && TELEGRAM_GROUP_NAME) {
+          // STRICT SAFETY: Disallow private direct messages to prevent unauthorized access
+          if (!isGroup) {
+            console.log(`🔒 [Telegram Filter] Private message from user ${msg.from?.id || 'unknown'} ignored for security.`);
+            continue;
+          }
+
+          // Strict group verification
+          if (TELEGRAM_GROUP_NAME) {
             const chatTitle = normalizeText(chat.title);
             const expected = normalizeText(TELEGRAM_GROUP_NAME);
             if (!chatTitle.includes(expected)) {

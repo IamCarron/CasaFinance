@@ -9,25 +9,77 @@ if (!fs.existsSync(RECEIPTS_DIR)) {
   fs.mkdirSync(RECEIPTS_DIR, { recursive: true });
 }
 
+const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.pdf', '.heic', '.heif']);
+const MAX_BASE64_LENGTH = 12 * 1024 * 1024; // 12MB base64 string
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB decoded binary
+
+function isAuthorized(req: Request) {
+  const expectedToken = process.env.ADMIN_TOKEN;
+  const botToken = process.env.BOT_API_TOKEN;
+  const isProd = process.env.NODE_ENV === 'production';
+
+  if (expectedToken) {
+    const authHeader = req.headers.get('Authorization');
+    const token = authHeader?.split(' ')[1];
+    return token === expectedToken;
+  }
+
+  if (isProd || botToken) {
+    return false;
+  }
+
+  return true;
+}
+
 export async function POST(req: NextRequest) {
   try {
+    if (!isAuthorized(req)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { imageBase64, filename } = body;
 
-    if (!imageBase64) {
-      return NextResponse.json({ error: 'Missing imageBase64 field' }, { status: 400 });
+    if (!imageBase64 || typeof imageBase64 !== 'string') {
+      return NextResponse.json({ error: 'Missing or invalid imageBase64 field' }, { status: 400 });
+    }
+
+    if (imageBase64.length > MAX_BASE64_LENGTH) {
+      return NextResponse.json(
+        { error: 'Payload too large. Maximum image size is 10MB.' },
+        { status: 413 }
+      );
+    }
+
+    // Validate extension against whitelist
+    const rawExt = filename ? path.extname(path.basename(filename)).toLowerCase() : '.jpg';
+    if (!ALLOWED_EXTENSIONS.has(rawExt)) {
+      return NextResponse.json(
+        { error: 'Invalid file extension. Allowed extensions: jpg, jpeg, png, webp, pdf, heic' },
+        { status: 400 }
+      );
+    }
+    const ext = rawExt;
+
+    const cleanBase64 = imageBase64.replace(/^data:image\/[a-z0-9+.-]+;base64,/i, '').trim();
+    if (!cleanBase64) {
+      return NextResponse.json({ error: 'Empty image data' }, { status: 400 });
+    }
+
+    const buffer = Buffer.from(cleanBase64, 'base64');
+    if (buffer.length === 0 || buffer.length > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: 'Invalid file content or file exceeds 10MB limit' },
+        { status: 400 }
+      );
     }
 
     const settings = getSettings();
     const categories = getCategories();
 
     // 1. Save receipt image locally
-    const ext = filename ? path.extname(filename) || '.jpg' : '.jpg';
     const savedName = `receipt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}${ext}`;
     const filePath = path.join(RECEIPTS_DIR, savedName);
-
-    const cleanBase64 = imageBase64.replace(/^data:image\/[a-z]+;base64,/, '');
-    const buffer = Buffer.from(cleanBase64, 'base64');
     fs.writeFileSync(filePath, buffer);
 
     const receiptUrl = `/api/receipts/${savedName}`;

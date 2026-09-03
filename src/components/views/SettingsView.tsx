@@ -31,6 +31,7 @@ import {
   X,
   ShieldCheck,
   AlertTriangle,
+  Lock,
 } from 'lucide-react';
 
 const AVAILABLE_ICONS = [
@@ -106,6 +107,8 @@ export default function SettingsView() {
   const [whatsappStatus, setWhatsappStatus] = useState<'disconnected' | 'qr_ready' | 'connected'>('disconnected');
   const [whatsappQrDataUrl, setWhatsappQrDataUrl] = useState<string | null>(null);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const [isBotUnauthorized, setIsBotUnauthorized] = useState(false);
+  const [inputAdminToken, setInputAdminToken] = useState('');
   const [isDisconnectingWhatsapp, setIsDisconnectingWhatsapp] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -127,7 +130,7 @@ export default function SettingsView() {
   const [backupError, setBackupError] = useState('');
 
   // Version & Updates
-  const CURRENT_VERSION = 'v1.0.4';
+  const CURRENT_VERSION = 'v1.1.0';
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<{
     checked: boolean;
@@ -241,7 +244,12 @@ export default function SettingsView() {
         const headers: Record<string, string> = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;
         const res = await fetch('/api/bot/status', { headers });
+        if (res.status === 401) {
+          setIsBotUnauthorized(true);
+          return;
+        }
         if (res.ok) {
+          setIsBotUnauthorized(false);
           const data = await res.json();
           setWhatsappStatus(data.status || 'disconnected');
           if (data.qrDataUrl) {
@@ -258,16 +266,57 @@ export default function SettingsView() {
     return () => clearInterval(timer);
   }, [isQrModalOpen]);
 
+  const handleSaveAdminToken = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const token = inputAdminToken.trim();
+    if (!token) return;
+    localStorage.setItem('adminToken', token);
+    setIsBotUnauthorized(false);
+    try {
+      const res = await fetch('/api/bot/status', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setWhatsappStatus(data.status || 'disconnected');
+        if (data.qrDataUrl) setWhatsappQrDataUrl(data.qrDataUrl);
+        else if (data.status === 'connected') setWhatsappQrDataUrl(null);
+      } else if (res.status === 401) {
+        setIsBotUnauthorized(true);
+        alert(language === 'en' ? 'Invalid token. Please verify ADMIN_TOKEN in .env' : 'Token incorrecto. Revisa el ADMIN_TOKEN en tu .env');
+      }
+    } catch (e) {}
+  };
+
   const handleDisconnectWhatsapp = async () => {
     if (!window.confirm(t('whatsappDisconnectConfirm'))) return;
     setIsDisconnectingWhatsapp(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') || '' : '';
-      const headers: Record<string, string> = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      await fetch('/api/bot/status', { method: 'DELETE', headers });
-      setWhatsappStatus('disconnected');
-      setWhatsappQrDataUrl(null);
+      let token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') || '' : '';
+      const doDelete = async (tkn: string) => {
+        const headers: Record<string, string> = {};
+        if (tkn) headers['Authorization'] = `Bearer ${tkn}`;
+        return fetch('/api/bot/status', { method: 'DELETE', headers });
+      };
+
+      let res = await doDelete(token);
+      if (res.status === 401 && typeof window !== 'undefined') {
+        const inputToken = window.prompt(
+          language === 'en'
+            ? 'Admin authorization required. Enter ADMIN_TOKEN:'
+            : 'Autorización administrativa requerida. Introduce el ADMIN_TOKEN del servidor:'
+        );
+        if (inputToken) {
+          token = inputToken.trim();
+          localStorage.setItem('adminToken', token);
+          res = await doDelete(token);
+        }
+      }
+
+      if (res.ok) {
+        setWhatsappStatus('disconnected');
+        setWhatsappQrDataUrl(null);
+      }
     } catch (e) {
     } finally {
       setIsDisconnectingWhatsapp(false);
@@ -337,10 +386,27 @@ export default function SettingsView() {
   };
 
   const handleDownloadBackup = async () => {
-    const token = localStorage.getItem('adminToken') || '';
-    const res = await fetch('/api/backup', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    let token = localStorage.getItem('adminToken') || '';
+    const doDownload = async (tkn: string) => {
+      return fetch('/api/backup', {
+        headers: tkn ? { 'Authorization': `Bearer ${tkn}` } : {}
+      });
+    };
+
+    let res = await doDownload(token);
+    if (res.status === 401) {
+      const inputToken = window.prompt(
+        language === 'en'
+          ? 'Admin authorization required. Enter ADMIN_TOKEN:'
+          : 'Autorización administrativa requerida. Introduce el ADMIN_TOKEN del servidor:'
+      );
+      if (inputToken) {
+        token = inputToken.trim();
+        localStorage.setItem('adminToken', token);
+        res = await doDownload(token);
+      }
+    }
+
     if (res.ok) {
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -350,7 +416,8 @@ export default function SettingsView() {
       a.click();
       window.URL.revokeObjectURL(url);
     } else {
-      alert('Error downloading backup. Unauthorized?');
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || 'Error downloading backup. Unauthorized?');
     }
   };
 
@@ -362,22 +429,39 @@ export default function SettingsView() {
       const text = await file.text();
       const json = JSON.parse(text);
 
-      const token = localStorage.getItem('adminToken') || '';
-      const res = await fetch('/api/backup', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(json),
-      });
+      let token = localStorage.getItem('adminToken') || '';
+      const doImport = async (tkn: string) => {
+        return fetch('/api/backup', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(tkn ? { 'Authorization': `Bearer ${tkn}` } : {})
+          },
+          body: JSON.stringify(json),
+        });
+      };
+
+      let res = await doImport(token);
+      if (res.status === 401) {
+        const inputToken = window.prompt(
+          language === 'en'
+            ? 'Admin authorization required. Enter ADMIN_TOKEN:'
+            : 'Autorización administrativa requerida. Introduce el ADMIN_TOKEN del servidor:'
+        );
+        if (inputToken) {
+          token = inputToken.trim();
+          localStorage.setItem('adminToken', token);
+          res = await doImport(token);
+        }
+      }
 
       if (res.ok) {
         setBackupSuccess(true);
         await refreshData();
         setTimeout(() => setBackupSuccess(false), 3000);
       } else {
-        setBackupError(t('invalidJson'));
+        const data = await res.json().catch(() => ({}));
+        setBackupError(data.error || t('invalidJson'));
       }
     } catch (err: any) {
       setBackupError(t('invalidJson'));
@@ -1207,15 +1291,37 @@ export default function SettingsView() {
               const confirmText = window.prompt(t('dangerZonePrompt'));
               const targetWord = t('dangerZoneWord');
               if (confirmText === targetWord || confirmText === 'BORRAR' || confirmText === 'DELETE') {
-                const token = localStorage.getItem('adminToken') || '';
-                const res = await fetch('/api/reset', { 
-                  method: 'POST',
-                  headers: { 'Authorization': `Bearer ${token}` }
-                });
+                let token = localStorage.getItem('adminToken') || '';
+                const sendReset = async (authToken: string) => {
+                  return fetch('/api/reset', { 
+                    method: 'POST',
+                    headers: { 
+                      'Content-Type': 'application/json',
+                      ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
+                    },
+                    body: JSON.stringify({ confirmation: confirmText })
+                  });
+                };
+
+                let res = await sendReset(token);
+                if (res.status === 401) {
+                  const inputToken = window.prompt(
+                    language === 'en'
+                      ? 'Admin authorization required. Enter ADMIN_TOKEN:'
+                      : 'Autorización administrativa requerida. Introduce el ADMIN_TOKEN del servidor:'
+                  );
+                  if (inputToken) {
+                    token = inputToken.trim();
+                    localStorage.setItem('adminToken', token);
+                    res = await sendReset(token);
+                  }
+                }
+
                 if (res.ok) {
                   window.location.reload();
                 } else {
-                  alert(t('dangerZoneError'));
+                  const data = await res.json().catch(() => ({}));
+                  alert(data.error || t('dangerZoneError'));
                 }
               } else if (confirmText !== null) {
                 alert(t('dangerZoneWrongWord'));
@@ -1260,7 +1366,36 @@ export default function SettingsView() {
 
             {/* QR Code Container */}
             <div className="py-2">
-              {whatsappStatus === 'connected' ? (
+              {isBotUnauthorized ? (
+                <form onSubmit={handleSaveAdminToken} className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-center space-y-3 animate-scale-up">
+                  <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto">
+                    <Lock className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                    {language === 'en' ? 'Server Protected by Token' : 'Servidor protegido con token'}
+                  </h4>
+                  <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                    {language === 'en'
+                      ? 'Enter the ADMIN_TOKEN from your .env to securely view the QR code:'
+                      : 'Introduce el ADMIN_TOKEN de tu archivo .env para ver el código QR de forma segura:'}
+                  </p>
+                  <div className="flex gap-2 pt-1">
+                    <input
+                      type="password"
+                      placeholder="ADMIN_TOKEN..."
+                      value={inputAdminToken}
+                      onChange={(e) => setInputAdminToken(e.target.value)}
+                      className="flex-1 text-xs px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                    <button
+                      type="submit"
+                      className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition shadow-xs"
+                    >
+                      {language === 'en' ? 'Unlock' : 'Desbloquear'}
+                    </button>
+                  </div>
+                </form>
+              ) : whatsappStatus === 'connected' ? (
                 <div className="p-8 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-center space-y-2 animate-scale-up">
                   <CheckCircle2 className="w-12 h-12 text-emerald-600 dark:text-emerald-400 mx-auto" />
                   <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">

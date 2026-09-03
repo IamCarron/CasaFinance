@@ -198,15 +198,36 @@ export function HouseholdProvider({
   // Mutations
   const saveSettings = async (newSettings: Partial<Settings>): Promise<boolean> => {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') || '' : '';
-      const res = await fetch('/api/settings', {
+      let token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') || '' : '';
+      let res = await fetch('/api/settings', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify(newSettings),
       });
+
+      if (res.status === 401 && typeof window !== 'undefined') {
+        const inputToken = window.prompt(
+          language === 'en'
+            ? 'Admin authorization required. Enter ADMIN_TOKEN:'
+            : 'Autorización administrativa requerida. Introduce el ADMIN_TOKEN del servidor:'
+        );
+        if (inputToken) {
+          token = inputToken.trim();
+          localStorage.setItem('adminToken', token);
+          res = await fetch('/api/settings', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(newSettings),
+          });
+        }
+      }
+
       if (res.ok) {
         const updated = await res.json();
         setSettings(updated);

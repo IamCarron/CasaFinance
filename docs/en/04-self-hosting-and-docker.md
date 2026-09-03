@@ -13,7 +13,7 @@ version: '3.8'
 
 services:
   casafinance:
-    image: node:20-alpine
+    image: node:22-alpine
     container_name: casafinance
     working_dir: /app
     volumes:
@@ -28,7 +28,7 @@ services:
     command: ["sh", "-c", "npm install && npm run build && npm run start"]
 
   casafinance-whatsapp-bot:
-    image: node:20-alpine
+    image: node:22-alpine
     container_name: casafinance-whatsapp-bot
     working_dir: /app
     volumes:

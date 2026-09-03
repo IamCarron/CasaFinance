@@ -19,6 +19,7 @@ import {
   QrCode,
   RefreshCw,
   AlertTriangle,
+  Lock,
 } from 'lucide-react';
 
 export default function OnboardingWizard() {
@@ -43,6 +44,8 @@ export default function OnboardingWizard() {
   const [telegramGroupName, setTelegramGroupName] = useState('Gastos Casa');
   const [whatsappStatus, setWhatsappStatus] = useState<'disconnected' | 'qr_ready' | 'connected'>('disconnected');
   const [whatsappQrDataUrl, setWhatsappQrDataUrl] = useState<string | null>(null);
+  const [isBotUnauthorized, setIsBotUnauthorized] = useState(false);
+  const [inputAdminToken, setInputAdminToken] = useState('');
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -56,7 +59,12 @@ export default function OnboardingWizard() {
         const headers: Record<string, string> = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;
         const res = await fetch('/api/bot/status', { headers });
+        if (res.status === 401) {
+          setIsBotUnauthorized(true);
+          return;
+        }
         if (res.ok) {
+          setIsBotUnauthorized(false);
           const data = await res.json();
           setWhatsappStatus(data.status || 'disconnected');
           if (data.qrDataUrl) {
@@ -593,7 +601,53 @@ export default function OnboardingWizard() {
                 </div>
 
                 <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-emerald-200 dark:border-emerald-800 text-center">
-                  {whatsappStatus === 'connected' ? (
+                  {isBotUnauthorized ? (
+                    <div className="py-3 px-2 space-y-2">
+                      <Lock className="w-6 h-6 text-amber-600 dark:text-amber-400 mx-auto" />
+                      <p className="text-xs font-bold text-amber-800 dark:text-amber-300">
+                        {language === 'en' ? 'Server Protected by Token' : 'Servidor protegido con token'}
+                      </p>
+                      <p className="text-[10px] text-zinc-500 leading-relaxed">
+                        {language === 'en'
+                          ? 'Enter the ADMIN_TOKEN from your .env file to view the QR code:'
+                          : 'Introduce el ADMIN_TOKEN de tu archivo .env para ver el código QR:'}
+                      </p>
+                      <div className="flex gap-1.5 pt-1">
+                        <input
+                          type="password"
+                          placeholder="ADMIN_TOKEN..."
+                          value={inputAdminToken}
+                          onChange={(e) => setInputAdminToken(e.target.value)}
+                          className="flex-1 text-xs px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const token = inputAdminToken.trim();
+                            if (!token) return;
+                            localStorage.setItem('adminToken', token);
+                            setIsBotUnauthorized(false);
+                            try {
+                              const res = await fetch('/api/bot/status', {
+                                headers: { 'Authorization': `Bearer ${token}` }
+                              });
+                              if (res.ok) {
+                                const data = await res.json();
+                                setWhatsappStatus(data.status || 'disconnected');
+                                if (data.qrDataUrl) setWhatsappQrDataUrl(data.qrDataUrl);
+                                else if (data.status === 'connected') setWhatsappQrDataUrl(null);
+                              } else {
+                                setIsBotUnauthorized(true);
+                              }
+                            } catch (e) {}
+                          }}
+                          className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg transition"
+                        >
+                          OK
+                        </button>
+                      </div>
+                    </div>
+                  ) : whatsappStatus === 'connected' ? (
                     <div className="py-3 space-y-1">
                       <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
                       <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 block">

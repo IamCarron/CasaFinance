@@ -78,7 +78,11 @@ fi
 # 5. Pull latest code from GitHub
 [ $IS_ES -eq 1 ] && echo -e "\n${YELLOW}⬇️ Descargando la última versión desde GitHub...${NC}" || echo -e "\n${YELLOW}⬇️ Pulling latest version from GitHub...${NC}"
 git stash > /dev/null 2>&1 || true
-git pull origin main
+git fetch origin main
+if ! git pull --ff-only origin main 2>/dev/null; then
+    # In case upstream branch was force-updated / squashed, synchronize directly to origin/main
+    git reset --hard origin/main
+fi
 
 # 6. Rebuild and start Docker containers
 [ $IS_ES -eq 1 ] && echo -e "\n${YELLOW}🔨 Reconstruyendo y actualizando contenedores...${NC}" || echo -e "\n${YELLOW}🔨 Rebuilding and updating containers...${NC}"

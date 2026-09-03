@@ -4,8 +4,32 @@ export const revalidate = 0;
 import { NextRequest, NextResponse } from 'next/server';
 import { getExpenses, getCategories, getSettings } from '@/lib/db';
 
+function isAuthorized(req: Request) {
+  const expectedToken = process.env.ADMIN_TOKEN;
+  const botToken = process.env.BOT_API_TOKEN;
+  const isProd = process.env.NODE_ENV === 'production';
+
+  if (expectedToken) {
+    const authHeader = req.headers.get('Authorization');
+    const token = authHeader?.split(' ')[1];
+    const { searchParams } = new URL(req.url);
+    const queryToken = searchParams.get('token');
+    return token === expectedToken || queryToken === expectedToken;
+  }
+
+  if (isProd || botToken) {
+    return false;
+  }
+
+  return true;
+}
+
 export async function GET(req: NextRequest) {
   try {
+    if (!isAuthorized(req)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const month = searchParams.get('month'); // optional filter: YYYY-MM
 

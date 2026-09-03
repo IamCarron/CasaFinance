@@ -15,6 +15,16 @@ export const metadata: Metadata = {
     description: 'Gestor de finanzas compartidas y presupuesto proporcional para parejas. Privado, local-first y listo para Docker.',
     type: 'website',
   },
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
 };
 
 export const viewport: Viewport = {
@@ -33,7 +43,9 @@ export default function RootLayout({
   return (
     <html lang="es" className="antialiased" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+        <link rel="alternate icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="bg-[#fdfdfc] dark:bg-[#0c0c0e] text-zinc-900 dark:text-zinc-100 min-h-screen" suppressHydrationWarning>
         {children}
