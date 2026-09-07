@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useHousehold } from '@/context/HouseholdContext';
-import { CategoryIcon } from '@/components/Icons';
+import { CategoryIcon, AVAILABLE_ICONS } from '@/components/Icons';
 import {
   Save,
   CheckCircle2,
@@ -34,22 +34,6 @@ import {
   Lock,
 } from 'lucide-react';
 
-const AVAILABLE_ICONS = [
-  'Home',
-  'Zap',
-  'ShoppingBag',
-  'Utensils',
-  'Car',
-  'HeartPulse',
-  'Film',
-  'Tv',
-  'Gift',
-  'PawPrint',
-  'Coffee',
-  'Wifi',
-  'Receipt',
-  'DollarSign',
-];
 
 const AVAILABLE_COLORS = [
   '#ef4444',

@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import path from 'path';
 import fs from 'fs';
-import { UserSettings, Category, FixedBudgetItem, Expense, SavingsGoal, MonthlyTrendPoint, MonthlyIncomeOverride } from './types';
+import type { UserSettings, Category, FixedBudgetItem, Expense, SavingsGoal, MonthlyTrendPoint, MonthlyIncomeOverride } from './types';
 
 // Ensure data directory exists
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data');

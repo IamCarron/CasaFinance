@@ -5,7 +5,7 @@ import { useHousehold } from '@/context/HouseholdContext';
 import MonthPicker from '@/components/MonthPicker';
 import { CategoryIcon } from '@/components/Icons';
 import { Search, Plus, Trash2, Edit2, CreditCard, User, Tag, Download, ArrowRightLeft } from 'lucide-react';
-import { Expense } from '@/lib/types';
+import type { Expense } from '@/lib/types';
 
 export default function ExpensesView() {
   const {

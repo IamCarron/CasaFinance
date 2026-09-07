@@ -42,21 +42,57 @@ Si estás en la calle y pagas algo de la casa con tu tarjeta privada:
 Si queréis que una compra puntual se divida a partes iguales:
 - `85 Cena especial 50/50` (o `mitad`, `a medias`).
 
+## ⚡ 3. Interactividad Avanzada (Borrar, Corregir y Botones)
+
+### 🟢 En WhatsApp:
+1. **Borrar con Reacción de Emoji (`🗑️` o `❌`):**
+   - Mantén pulsado el mensaje de confirmación del bot y reacciona con **`🗑️`** o **`❌`**. El bot eliminará el gasto al instante de la base de datos y actualizará los balances.
+2. **Borrar respondiendo al mensaje:**
+   - Desliza a la derecha el mensaje del gasto y escribe: `borrar`, `eliminar`, `cancela` o `/borrar`.
+3. **Modificar respondiendo al mensaje:**
+   - Desliza a la derecha y escribe la corrección en lenguaje natural:
+     - `eran 35€` o `35€` -> Corrige el importe.
+     - `lo pagó Diego` o `pagó Sam` -> Corrige el pagador.
+     - `categoría Ocio` -> Cambia la categoría.
+     - `50/50` -> Forza reparto al 50%.
+4. **Comando Rápido `/deshacer`:**
+   - Envía `/deshacer` (sin citar) para anular el último gasto que acabas de meter.
+
+### 🔵 En Telegram:
+- **Botones en cada gasto:** Debajo de cada gasto confirmado aparecen los botones pulsables directos:
+  - `[ 🗑️ Borrar ]` (elimina el gasto en 1 toque)
+  - `[ ⚖️ Forzar 50/50 ]` (convierte el gasto a reparto a medias)
+- **Botón en balance:** Al pedir `/balance`, si hay deudas aparece el botón:
+  - `[ 💸 Marcar como Saldado ]` (liquida la deuda automáticamente)
+
 ---
 
-## 🤖 3. Comandos Útiles
+## 🤖 4. Catálogo Completo de Comandos
 
-Puedes consultar el estado de las finanzas en cualquier momento enviando estos comandos al grupo:
+Puedes interactuar con el bot en cualquier momento enviando estos comandos al grupo:
 
 | Comando | Descripción |
 | :--- | :--- |
-| `!balance` o `/balance` | Muestra quién debe dinero a quién por adelantos particulares del mes actual. |
-| `!resumen` o `/resumen` | Resumen mensual: Total gastado, gasto de cuenta común y número de transacciones. |
-| `!gastos` o `/gastos` | Lista los últimos 5 gastos registrados este mes. |
-| `!ayuda` o `/ayuda` | Muestra la chuleta de comandos y ejemplos de formato. |
+| **`/ayuda`** | Chuleta visual completa con ejemplos de formato y comandos. |
+| **`/balance`** | Muestra quién debe dinero a quién por adelantos particulares del mes. |
+| **`/saldar`** | Marca las deudas como saldadas registrando la compensación en la web. |
+| **`/resumen`** | Totales gastados, saldo de cuenta común y restante del presupuesto. |
+| **`/gastos`** | Muestra los últimos 5 gastos registrados con pagador y categoría. |
+| **`/deshacer`** | Anula inmediatamente el último gasto guardado. |
+| **`/huchas`** | Estado de las metas de ahorro con barras de progreso `[██████░░░░]`. |
+| **`/hucha [nombre] [€]`** | Suma una aportación a una hucha (ej: `/hucha viaje 50`). |
+| **`/categorias`** | Lista todas las categorías activas del hogar. |
 
 ---
 
-## 🛡️ 4. Política Anti-Spam y Privacidad Total
+## ⚠️ 5. Alertas de Presupuesto en Tiempo Real
+
+Cuando un nuevo gasto haga que una categoría alcance el **80%** o supere el **100%** de su presupuesto asignado para el mes, el bot añadirá un aviso automático en la confirmación:
+> *⚠️ **Aviso:** Habéis alcanzado el 85% de Supermercado (425,00 € / 500,00 €)*
+
+---
+
+## 🛡️ 6. Política Anti-Spam y Privacidad Total
 - **Cero Spam:** Si habláis de cosas cotidianas en el grupo (`"¿A qué hora llegas?"`), el bot permanece en silencio absoluto y no responderá nada.
 - **100% Local:** Ningún mensaje se envía a servidores de terceros ni a la nube de IA; el análisis del texto ocurre dentro de tu propio procesador.
+

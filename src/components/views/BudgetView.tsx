@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useHousehold } from '@/context/HouseholdContext';
 import { CategoryIcon } from '@/components/Icons';
 import { Plus, CheckCircle2, Save, Trash2, Edit2, Sliders, ToggleLeft, ToggleRight } from 'lucide-react';
-import { FixedBudgetItem } from '@/lib/types';
+import type { FixedBudgetItem } from '@/lib/types';
 
 export default function BudgetView() {
   const {

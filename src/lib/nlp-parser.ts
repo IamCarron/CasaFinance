@@ -1,4 +1,4 @@
-import { BotParsedExpense, Category, UserSettings } from './types';
+import type { BotParsedExpense, Category, UserSettings } from './types';
 
 export interface CategoryMatchResult {
   categoryId: string;
@@ -1223,10 +1223,19 @@ export function parseExpenseMessage(
   } else {
     const endAmountRegex = /\s+(\$|€|£)?\s*(\d+(?:[.,]\d{1,2})?)\s*(?:€|\$|£|eur|euros|usd|gbp)?$/i;
     const endMatch = text.match(endAmountRegex);
-    if (endMatch) {
+    if (endMatch && endMatch.index !== undefined) {
       const numStr = endMatch[2].replace(',', '.');
       amount = parseFloat(numStr);
       remainingText = text.slice(0, endMatch.index).trim();
+    } else {
+      // Middle amount matching (e.g. "Cena 45 pagué yo" or "Compra 100 adelanto")
+      const midAmountRegex = /\s+(\$|€|£)?\s*(\d+(?:[.,]\d{1,2})?)\s*(?:€|\$|£|eur|euros|usd|gbp)?\s+/i;
+      const midMatch = text.match(midAmountRegex);
+      if (midMatch && midMatch.index !== undefined) {
+        const numStr = midMatch[2].replace(',', '.');
+        amount = parseFloat(numStr);
+        remainingText = (text.slice(0, midMatch.index) + ' ' + text.slice(midMatch.index + midMatch[0].length)).trim();
+      }
     }
   }
 

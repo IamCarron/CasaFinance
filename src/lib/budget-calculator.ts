@@ -1,4 +1,4 @@
-import { UserSettings, FixedBudgetItem, Expense, SettlementDetail, Category, CategoryBreakdown, MonthlySummary, MonthlyIncomeOverride } from './types';
+import type { UserSettings, FixedBudgetItem, Expense, SettlementDetail, Category, CategoryBreakdown, MonthlySummary, MonthlyIncomeOverride } from './types';
 
 /**
  * Calculates the split ratio between partner 1 and partner 2

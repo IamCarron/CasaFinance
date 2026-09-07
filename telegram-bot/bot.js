@@ -34,17 +34,27 @@ async function fetchDynamicSettings() {
   }
 }
 
-async function sendMessage(chatId, text) {
+async function sendMessage(chatId, text, buttons) {
   if (!TELEGRAM_BOT_TOKEN) return;
   try {
+    const payload = {
+      chat_id: chatId,
+      text,
+      parse_mode: 'Markdown',
+    };
+
+    if (buttons && Array.isArray(buttons) && buttons.length > 0) {
+      payload.reply_markup = {
+        inline_keyboard: [
+          buttons.map((b) => ({ text: b.text, callback_data: b.callback_data })),
+        ],
+      };
+    }
+
     await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: 'Markdown',
-      }),
+      body: JSON.stringify(payload),
     });
   } catch (err) {
     console.error('Error enviando mensaje a Telegram:', err.message);
@@ -80,6 +90,65 @@ async function startPolling() {
         for (const update of data.result) {
           offset = update.update_id + 1;
 
+          // 1. Handle Inline Button Clicks (Callback Queries)
+          if (update.callback_query) {
+            const cq = update.callback_query;
+            const callbackData = cq.data || '';
+            const chat = cq.message?.chat;
+            const senderName = cq.from?.first_name || cq.from?.username || 'User';
+
+            // Acknowledge callback immediately to remove loading clock on Telegram
+            try {
+              await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ callback_query_id: cq.id }),
+              });
+            } catch (e) {}
+
+            let action = callbackData;
+            let targetId = undefined;
+            if (callbackData.includes(':')) {
+              const parts = callbackData.split(':');
+              action = parts[0];
+              targetId = parts.slice(1).join(':');
+            }
+
+            try {
+              const botRes = await fetch(CASAFINANCE_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action,
+                  targetId,
+                  sender: senderName,
+                  token: BOT_API_TOKEN,
+                }),
+              });
+
+              if (botRes.ok) {
+                const botData = await botRes.json();
+                if (botData.reply && chat?.id && cq.message?.message_id) {
+                  // Update original message removing buttons and showing action result
+                  await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/editMessageText`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      chat_id: chat.id,
+                      message_id: cq.message.message_id,
+                      text: `${cq.message.text}\n\n${botData.reply}`,
+                      parse_mode: 'Markdown',
+                    }),
+                  });
+                }
+              }
+            } catch (err) {
+              console.error('Error handling Telegram callback query:', err.message);
+            }
+            continue;
+          }
+
+          // 2. Handle Text Messages
           const msg = update.message;
           if (!msg || !msg.text) continue;
 
@@ -104,8 +173,9 @@ async function startPolling() {
 
           const senderName = msg.from?.first_name || msg.from?.username || 'User';
           const text = msg.text.trim();
+          const quotedMessage = msg.reply_to_message?.text;
 
-          console.log(`📩 [Telegram] Message from ${senderName} in "${chat.title || 'Private'}": "${text}"`);
+          console.log(`📩 [Telegram] Message from ${senderName} in "${chat.title || 'Private'}": "${text}"${quotedMessage ? ` (quoted: "${quotedMessage.slice(0, 30)}...")` : ''}`);
 
           try {
             const botRes = await fetch(CASAFINANCE_API_URL, {
@@ -114,6 +184,7 @@ async function startPolling() {
               body: JSON.stringify({
                 message: text,
                 sender: senderName,
+                quotedMessage,
                 token: BOT_API_TOKEN,
               }),
             });
@@ -122,7 +193,7 @@ async function startPolling() {
               const botData = await botRes.json();
               if (botData.reply) {
                 console.log(`📤 [Telegram] Sending reply to chat ${chat.id}`);
-                await sendMessage(chat.id, botData.reply);
+                await sendMessage(chat.id, botData.reply, botData.buttons);
               }
             }
           } catch (err) {
